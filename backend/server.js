@@ -120,6 +120,27 @@ app.post('/api/auth/verify-otp', async (req, res, next) => {
   }
 });
 
+app.get('/api/test-email', async (req, res) => {
+  const { to } = req.query;
+  if (!to) {
+    return res.status(400).json({ success: false, message: 'Provide ?to=your@email.com in the query string.' });
+  }
+  try {
+    ensureEmailConfig();
+    await transporter.sendMail({
+      from: `${process.env.EMAIL_FROM_NAME || 'Parity Foods'} <${process.env.EMAIL_SENDER_ADDRESS}>`,
+      to,
+      subject: 'Parity Foods — SMTP Test',
+      text: 'This is a test email from your Parity Foods backend. SMTP is working correctly!',
+      html: '<p>This is a <strong>test email</strong> from your Parity Foods backend. SMTP is working correctly! ✅</p>',
+    });
+    res.json({ success: true, message: `Test email sent to ${to}` });
+  } catch (err) {
+    console.error('Test email error:', err);
+    res.status(500).json({ success: false, message: err.message, code: err.code || null });
+  }
+});
+
 app.use((err, req, res, next) => {
   console.error(err);
   const status = err.statusCode || 500;
