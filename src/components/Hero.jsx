@@ -1,25 +1,34 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 
 const Hero = () => {
     return (
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
-            {/* Video Background */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-black/40 z-10" /> {/* Overlay */}
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                >
-                    <source src="https://videos.pexels.com/video-files/3196344/3196344-uhd_2560_1440_25fps.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                </video>
+            {/* Animated Premium Liquid Gold Background */}
+            <div className="absolute inset-0 z-0" style={{ background: 'linear-gradient(135deg, #0f0c05 0%, #1a160b 40%, #2a1f0a 100%)' }}>
+                <motion.div
+                    animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
+                    transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+                    className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full"
+                    style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 65%)' }}
+                />
+                <motion.div
+                    animate={{ scale: [1.1, 1, 1.1], opacity: [0.1, 0.2, 0.1] }}
+                    transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+                    className="absolute bottom-[-15%] right-[-10%] w-[55vw] h-[55vw] rounded-full"
+                    style={{ background: 'radial-gradient(circle, rgba(255,150,0,0.3) 0%, transparent 65%)' }}
+                />
+                <motion.div
+                    animate={{ x: [0, 40, 0], y: [0, -30, 0], opacity: [0.1, 0.2, 0.1] }}
+                    transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                    className="absolute top-[20%] right-[15%] w-[40vw] h-[40vw] rounded-full"
+                    style={{ background: 'radial-gradient(circle, rgba(250,200,80,0.2) 0%, transparent 60%)' }}
+                />
             </div>
+            {/* Darker overlay for text crispness */}
+            <div className="absolute inset-0 bg-black/40 z-10" />
 
             {/* Content */}
             <div className="relative z-20 container mx-auto px-6 text-center text-white mt-20">
@@ -39,7 +48,7 @@ const Hero = () => {
                     </h1>
 
                     <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
-                        From our fields to your kitchen. Experience the authentic flavor of cold-pressed oils and premium staples.
+                        Cold-pressed kachi ghani mustard oil — straight from the fields to your kitchen. Pure, bold, and unadulterated.
                     </p>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-6">
