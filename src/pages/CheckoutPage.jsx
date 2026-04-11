@@ -7,7 +7,7 @@ import { State, City } from 'country-state-city';
 import { auth } from '../config/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 const OTP_LENGTH = 4;
 
 const CheckoutPage = () => {
