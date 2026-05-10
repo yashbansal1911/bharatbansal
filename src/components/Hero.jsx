@@ -28,7 +28,7 @@ const Hero = () => {
                 />
             </div>
             {/* Darker overlay for text crispness */}
-            <div className="absolute inset-0 bg-black/40 z-10" />
+            <div className="absolute inset-0 bg-brand-green z-10" />
 
             {/* Content */}
             <div className="relative z-20 container mx-auto px-6 text-center text-white mt-20">

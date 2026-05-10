@@ -26,7 +26,7 @@ const Navbar = () => {
 
     const navLinks = [
         { name: 'Home', path: '/' },
-        { name: 'Shop', path: '/shop' },
+        // { name: 'Shop', path: '/shop' },
         { name: 'Our Story', path: '/about' },
         { name: 'Why Us', path: '/why-us' },
         { name: 'Contact', path: '/contact' },
@@ -65,8 +65,8 @@ const Navbar = () => {
                         className="flex items-center"
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     >
-                        <img src="/images/parity-icon-transparent.png" alt="Icon" className="h-16 w-auto mr-3" />
-                        <img src="/images/parity-text-logo.png" alt="PARITY" className="h-10 w-auto" />
+                        <img src="/images/parity-icon-new.png" alt="Icon" className="h-12 w-auto mr-3 mix-blend-multiply" />
+                        <img src="/images/parity-logo-new.png" alt="PARITY Logo" className="h-10 w-auto mix-blend-multiply" />
                     </Link>
 
                     {/* Desktop Menu */}
@@ -84,6 +84,7 @@ const Navbar = () => {
                         ))}
 
                         <div className="flex items-center space-x-4">
+                            {/* Temporarily disabled Shop features
                             <button
                                 onClick={() => setIsCartOpen(true)}
                                 className="relative p-2 text-brand-dark hover:text-brand-gold transition-colors"
@@ -101,11 +102,13 @@ const Navbar = () => {
                             >
                                 Shop Now
                             </Link>
+                            */}
                         </div>
                     </div>
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden flex items-center gap-4">
+                        {/* Temporarily disabled
                         <button
                             onClick={() => setIsCartOpen(true)}
                             className="relative text-brand-dark"
@@ -117,6 +120,7 @@ const Navbar = () => {
                                 </span>
                             )}
                         </button>
+                        */}
                         <button
                             className="text-brand-dark"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -150,6 +154,7 @@ const Navbar = () => {
                                     {link.name}
                                 </Link>
                             ))}
+                            {/* Temporarily disabled
                             <Link
                                 to="/shop"
                                 onClick={() => setIsMobileMenuOpen(false)}
@@ -157,6 +162,7 @@ const Navbar = () => {
                             >
                                 Shop Now
                             </Link>
+                            */}
                         </div>
                     </motion.div>
                 )}

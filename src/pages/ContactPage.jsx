@@ -21,25 +21,34 @@ const ContactPage = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus('sending');
 
-        // REPLACE THESE WITH YOUR ACTUAL EMAILJS KEYS
-        // Sign up at https://www.emailjs.com/
-        const SERVICE_ID = 'service_67rwggu';
-        const TEMPLATE_ID = 'template_93bek1s';
-        const PUBLIC_KEY = 'eZOlF2MCM7qqSGGS1';
+        const templateParams = {
+            ...formData,
+            from_name: formData.name,
+            reply_to: formData.email,
+            message: formData.comment, // Map 'comment' to 'message' just in case
+            to_name: 'Parity Foods Team'
+        };
 
-        emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, PUBLIC_KEY)
-            .then((result) => {
-                console.log('Email sent successfully:', result.text);
-                setStatus('success');
-                setFormData({ name: '', phone: '', email: '', comment: '' });
-            }, (error) => {
-                console.error('Failed to send email:', error.text);
-                setStatus('error');
-            });
+        try {
+            await emailjs.send(
+                import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_196fkgq',
+                import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s',
+                templateParams,
+                {
+                    publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy',
+                }
+            );
+            console.log('Email sent successfully');
+            setStatus('success');
+            setFormData({ name: '', phone: '', email: '', comment: '' });
+        } catch (error) {
+            console.error('Failed to send email:', error);
+            setStatus('error');
+        }
     };
 
     const inputClasses = "w-full px-4 py-3 rounded-full border border-gray-300 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all bg-white";

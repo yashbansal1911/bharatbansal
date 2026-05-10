@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import emailjs from '@emailjs/browser';
 
 const ContactForm = () => {
     const [formData, setFormData] = useState({
@@ -11,6 +12,8 @@ const ContactForm = () => {
         relatedTo: '',
         message: ''
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState(null);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,10 +23,41 @@ const ContactForm = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Form submitted:', formData);
-        // Handle form submission logic here
+        setIsSubmitting(true);
+        setSubmitStatus(null);
+
+        try {
+            const templateParams = {
+                ...formData,
+                from_name: formData.name,
+                reply_to: formData.email,
+                to_name: 'Parity Foods Team'
+            };
+
+            await emailjs.send(
+                import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_196fkgq',
+                import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s',
+                templateParams,
+                {
+                    publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy',
+                }
+            );
+            
+            setSubmitStatus({ type: 'success', message: 'Your message has been sent successfully! We will get back to you soon.' });
+            setFormData({
+                name: '', email: '', phone: '', state: '', country: 'India', relatedTo: '', message: ''
+            });
+        } catch (error) {
+            console.error('EmailJS error:', error);
+            setSubmitStatus({ 
+                type: 'error', 
+                message: 'Failed to send message. Please try again later or contact us directly.' 
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const inputClasses = "w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all bg-white/50 backdrop-blur-sm";
@@ -159,13 +193,32 @@ const ContactForm = () => {
                             ></textarea>
                         </div>
 
+                        {submitStatus && (
+                            <div className={`p-4 rounded-lg mb-6 text-sm font-bold shadow-sm ${
+                                submitStatus.type === 'success' 
+                                ? 'bg-green-50 text-green-700 border border-green-200' 
+                                : 'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                                {submitStatus.message}
+                            </div>
+                        )}
+
                         {/* Submit Button */}
-                        <div className="text-center md:text-left">
+                        <div className="text-center md:text-left pt-2">
                             <button
                                 type="submit"
-                                className="bg-brand-green text-white px-10 py-4 rounded-full font-bold tracking-wide hover:bg-brand-gold transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                                disabled={isSubmitting}
+                                className="bg-brand-green text-white px-10 py-4 rounded-full font-bold tracking-wide hover:bg-brand-gold transition-colors duration-300 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-w-[160px] mx-auto md:mx-0"
                             >
-                                SUBMIT
+                                {isSubmitting ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        SENDING...
+                                    </>
+                                ) : "SUBMIT"}
                             </button>
                         </div>
                     </motion.form>
