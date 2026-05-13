@@ -27,36 +27,6 @@ const WhyUsPage = () => {
                 </div>
             </section>
 
-            {/* Vision & Mission */}
-            <section className="py-24 bg-white">
-                <div className="container mx-auto px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="bg-brand-light p-10 rounded-[2rem] border border-brand-gold/20"
-                        >
-                            <h2 className="text-3xl font-serif font-bold text-brand-dark mb-4">VISION</h2>
-                            <p className="text-lg text-gray-600 leading-relaxed">
-                                To create a future where purity is a right, not a privilege.
-                            </p>
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="bg-brand-light p-10 rounded-[2rem] border border-brand-gold/20"
-                        >
-                            <h2 className="text-3xl font-serif font-bold text-brand-dark mb-4">MISSION</h2>
-                            <p className="text-lg text-gray-600 leading-relaxed">
-                                To craft everyday essentials with uncompromising purity, fair value, and complete transparency — sourcing responsibly, testing rigorously, and putting consumer well-being at the heart of every decision.
-                            </p>
-                        </motion.div>
-                    </div>
-                </div>
-            </section>
 
             {/* Our Story */}
             <section className="py-24 bg-brand-light">
