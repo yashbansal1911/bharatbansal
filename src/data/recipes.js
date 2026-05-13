@@ -2,7 +2,7 @@ export const recipes = [
     {
         id: 'sarson-ka-saag',
         title: 'Sarson ka Saag',
-        image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=2036&auto=format&fit=crop',
+        image: '/images/sarson-ka-saag.jpg',
         time: '40 mins',
         serves: '4',
         desc: 'Heartwarming Punjabi mustard greens tempered with Parity Mustard Oil for deep traditional flavor.',
@@ -50,7 +50,7 @@ export const recipes = [
     {
         id: 'mustard-oil-aloo-sabzi',
         title: 'Mustard Oil Aloo Sabzi',
-        image: 'https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?q=80&w=2000&auto=format&fit=crop',
+        image: '/images/aloo-sabzi.jpg',
         time: '25 mins',
         serves: '3',
         desc: 'Simple, wholesome potato stir-fry with Parity Mustard Oil — a beloved everyday comfort dish.',
@@ -97,7 +97,7 @@ export const recipes = [
     {
         id: 'baingan-bharta',
         title: 'Baingan Bharta',
-        image: 'https://images.unsplash.com/photo-1626200926893-e3e8b75f7e91?q=80&w=1887&auto=format&fit=crop',
+        image: '/images/baigan-bharta.jpg',
         time: '35 mins',
         serves: '4',
         desc: 'Smoky roasted aubergine mash stir-fried in Parity Mustard Oil with spices. A North Indian classic.',
