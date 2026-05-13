@@ -6,7 +6,7 @@ import { products } from '../data/products';
 
 const features = [
     { icon: Leaf, label: 'Cold-Pressed' },
-    { icon: Droplets, label: 'No Additives' },
+    { icon: Droplets, label: 'Omega 3 & 6 (PUFA)' },
     { icon: Award, label: 'Farm Fresh' },
 ];
 
@@ -61,25 +61,24 @@ const ProductShowcase = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6 }}
-                                className="group relative w-full md:w-72 bg-gradient-to-b from-gray-50 to-white rounded-[2rem] border border-gray-100 shadow-md hover:shadow-2xl transition-all duration-500 md:mb-0 md:mr-[-1px] z-10"
+                                className="group relative w-full md:w-80 bg-gradient-to-b from-gray-50 to-white rounded-[2rem] border border-gray-100 shadow-md hover:shadow-2xl transition-all duration-500 z-10"
                             >
                                 {/* Size badge */}
                                 <div className="absolute top-5 left-5 bg-white border border-gray-200 text-brand-dark text-xs font-bold px-3 py-1 rounded-full shadow-sm z-20">
-                                    500 ml
+                                    2 Litres
                                 </div>
 
-                                {/* Image area — smaller height → smaller-looking bottle */}
-                                <div className="relative flex items-end justify-center pt-10 pb-0" style={{ height: '240px' }}>
+                                {/* Image area — tall enough to show full jar incl. bottom claims */}
+                                <div className="relative flex items-center justify-center px-6 pt-10 pb-4" style={{ height: '400px' }}>
                                     <img
                                         src={products[0].image}
                                         alt={products[0].name}
-                                        className="object-contain h-full transition-transform duration-500 group-hover:scale-105"
-                                        style={{ maxHeight: '200px' }}
+                                        className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-105 mix-blend-multiply"
                                     />
                                 </div>
 
                                 {/* Info */}
-                                <div className="p-6 pt-4">
+                                <div className="p-6 pt-2">
                                     <span className="text-xs font-bold text-brand-gold uppercase tracking-widest">{products[0].category}</span>
                                     <h3 className="text-xl font-serif font-bold text-brand-dark mt-1 mb-2">Premium Mustard Oil</h3>
                                     <p className="text-gray-400 text-sm mb-5 leading-relaxed">{products[0].desc}</p>
@@ -107,35 +106,34 @@ const ProductShowcase = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6, delay: 0.15 }}
-                                className="group relative w-full md:w-80 bg-gradient-to-b from-amber-50 to-white rounded-[2rem] border-2 border-brand-gold shadow-xl hover:shadow-2xl transition-all duration-500 z-20"
+                                className="group relative w-full md:w-96 bg-gradient-to-b from-amber-50 to-white rounded-[2rem] border-2 border-brand-gold shadow-xl hover:shadow-2xl transition-all duration-500 z-20"
                             >
                                 {/* Best value badge */}
                                 <div className="absolute top-5 left-5 bg-brand-gold text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm z-20">
                                     Best Value
                                 </div>
                                 <div className="absolute top-5 right-5 bg-white border border-gray-200 text-brand-dark text-xs font-bold px-3 py-1 rounded-full shadow-sm z-20">
-                                    1 Litre
+                                    5 Litres
                                 </div>
 
-                                {/* Image area — taller → bigger bottle */}
-                                <div className="relative flex items-end justify-center pt-10 pb-0" style={{ height: '300px' }}>
+                                {/* Image area — tall enough to show full jar incl. bottom claims */}
+                                <div className="relative flex items-center justify-center px-6 pt-10 pb-4" style={{ height: '480px' }}>
                                     <img
                                         src={products[1].image}
                                         alt={products[1].name}
-                                        className="object-contain h-full transition-transform duration-500 group-hover:scale-105"
-                                        style={{ maxHeight: '270px' }}
+                                        className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-105 mix-blend-multiply"
                                     />
                                 </div>
 
                                 {/* Info */}
-                                <div className="p-6 pt-4">
+                                <div className="p-6 pt-2">
                                     <span className="text-xs font-bold text-brand-gold uppercase tracking-widest">{products[1].category}</span>
                                     <h3 className="text-xl font-serif font-bold text-brand-dark mt-1 mb-2">Premium Mustard Oil</h3>
                                     <p className="text-gray-400 text-sm mb-5 leading-relaxed">{products[1].desc}</p>
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <span className="text-2xl font-bold text-brand-green">{products[1].currency}{products[1].price}</span>
-                                            <span className="text-xs text-gray-400 ml-2">₹340/L</span>
+                                            <span className="text-xs text-gray-400 ml-2">₹170/L</span>
                                         </div>
                                         <motion.button
                                             whileTap={{ scale: 0.95 }}

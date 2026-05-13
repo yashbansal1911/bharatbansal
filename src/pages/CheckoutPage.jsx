@@ -614,8 +614,8 @@ const CheckoutPage = () => {
                                 <div className="space-y-4 mb-6 max-h-80 overflow-y-auto pr-2">
                                     {cart.map((item) => (
                                         <div key={item.id} className="flex gap-4">
-                                            <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                            <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                                                <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
                                             </div>
                                             <div className="flex-grow">
                                                 <h4 className="font-bold text-brand-dark text-sm">{item.name}</h4>

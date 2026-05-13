@@ -2,6 +2,7 @@ import React from 'react';
 import Hero from '../components/Hero';
 import ProductShowcase from '../components/ProductShowcase';
 import HealthBenefits from '../components/HealthBenefits';
+import VisionMission from '../components/VisionMission';
 import Recipes from '../components/Recipes';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -12,6 +13,7 @@ const HomePage = () => {
         <>
             <Hero />
             <HealthBenefits />
+            <VisionMission />
             <ProductShowcase />
             <Recipes />
 

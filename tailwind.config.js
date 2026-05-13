@@ -8,11 +8,11 @@ export default {
         extend: {
             colors: {
                 brand: {
-                    gold: '#C5A028', // Metallic Gold
-                    green: '#0F3D2E', // Forest Green
-                    dark: '#0A0A0A', // Rich Black
+                    gold: '#D19E31', // Mustard Yellow (Accent)
+                    green: '#4B5930', // Olive Green (Primary)
+                    dark: '#2A3013', // Dark Olive
                     light: '#FDFBF7', // Cream/Off-white
-                    accent: '#E6D5B8', // Soft Beige
+                    accent: '#E6C16E', // Gold (Highlight)
                 }
             },
             fontFamily: {
