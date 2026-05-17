@@ -11,9 +11,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 10);
-const allowedOrigins = process.env.CLIENT_ORIGIN
+const envOrigins = process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim())
-  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+  : [];
+const allowedOrigins = [...new Set([...envOrigins, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'https://www.bforeverfoods.com', 'https://bforeverfoods.com', 'https://parity-foods-final.vercel.app'])];
 const allowAllOrigins = allowedOrigins.includes('*');
 
 app.use(cors({
