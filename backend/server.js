@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 10);
 const allowedOrigins = process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim())
-  : ['http://localhost:5173'];
+  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
 const allowAllOrigins = allowedOrigins.includes('*');
 
 app.use(cors({
@@ -61,6 +61,7 @@ app.get('/health', (req, res) => {
 app.post('/api/auth/request-otp', async (req, res, next) => {
   try {
     const { email } = req.body;
+    console.log(`OTP Request received for: ${email}`);
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
     }
@@ -77,11 +78,19 @@ app.post('/api/auth/request-otp', async (req, res, next) => {
 
     ensureEmailConfig();
     await transporter.sendMail({
-      from: `${process.env.EMAIL_FROM_NAME || 'Parity Foods'} <${process.env.EMAIL_SENDER_ADDRESS}>`,
+      from: `"${process.env.EMAIL_FROM_NAME || 'B Forever Foods'}" <${process.env.EMAIL_SENDER_ADDRESS}>`,
       to: normalizedEmail,
-      subject: 'Parity Foods Verification Code',
-      text: `Your verification code is ${code}. It expires in ${OTP_EXPIRY_MINUTES} minutes.`,
-      html: `<p>Your verification code is <strong>${code}</strong>.</p><p>The code expires in ${OTP_EXPIRY_MINUTES} minutes.</p>`,
+      subject: `Verification code for your ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} account`,
+      text: `Hello,\n\nYour verification code is ${code}.\n\nThis code will expire in ${OTP_EXPIRY_MINUTES} minutes. If you did not request this, please ignore this email.\n\nBest regards,\nThe ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
+            <p>Hello,</p>
+            <p>Your verification code is: <strong style="font-size: 24px; color: #4B5930; background: #f9f9f9; padding: 5px 10px; border-radius: 4px; border: 1px solid #ddd;">${code}</strong></p>
+            <p>This code will expire in ${OTP_EXPIRY_MINUTES} minutes. If you did not request this code, you can safely ignore this email.</p>
+            <p>Best regards,<br>
+            <strong>The ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} Team</strong></p>
+        </div>
+      `,
     });
 
     res.json({ message: 'Verification code sent to your email.' });

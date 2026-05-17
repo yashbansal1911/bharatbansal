@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { ArrowLeft, CreditCard, MapPin, CheckCircle, Truck, Smartphone, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, MapPin, CheckCircle, Truck, Smartphone, ShieldCheck, Loader2, AlertCircle, Plus, Minus, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { State, City } from 'country-state-city';
 import { auth } from '../config/firebase';
@@ -11,7 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001
 const OTP_LENGTH = 4;
 
 const CheckoutPage = () => {
-    const { cart, getCartTotal } = useCart();
+    const { cart, getCartTotal, updateQuantity, removeFromCart } = useCart();
     const navigate = useNavigate();
     const [step, setStep] = useState(1); // 1: Login, 2: Address, 3: Payment, 4: Success
 
@@ -608,49 +608,122 @@ const CheckoutPage = () => {
                     {/* Sidebar - Order Summary */}
                     {step !== 4 && (
                         <div className="lg:col-span-1">
-                            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 sticky top-40">
-                                <h3 className="text-xl font-serif font-bold text-brand-dark mb-6">Order Summary</h3>
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-white rounded-[2rem] shadow-xl shadow-brand-dark/5 border border-gray-100 overflow-hidden sticky top-32"
+                            >
+                                <div className="p-8">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h3 className="text-2xl font-serif font-bold text-brand-dark">Order Summary</h3>
+                                        <span className="bg-brand-gold/10 text-brand-gold px-3 py-1 rounded-full text-xs font-bold">
+                                            {cart.reduce((acc, item) => acc + item.quantity, 0)} Items
+                                        </span>
+                                    </div>
 
-                                <div className="space-y-4 mb-6 max-h-80 overflow-y-auto pr-2">
-                                    {cart.map((item) => (
-                                        <div key={item.id} className="flex gap-4">
-                                            <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
-                                            </div>
-                                            <div className="flex-grow">
-                                                <h4 className="font-bold text-brand-dark text-sm">{item.name}</h4>
-                                                <div className="flex justify-between text-sm text-gray-500 mt-1">
-                                                    <span>Qty: {item.quantity}</span>
-                                                    <span>{item.currency}{item.price * item.quantity}</span>
-                                                </div>
+                                    {/* Scrollable Item List */}
+                                    <div className="space-y-6 mb-8 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                        <AnimatePresence mode="popLayout">
+                                            {cart.map((item) => (
+                                                <motion.div 
+                                                    key={item.id}
+                                                    layout
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                    className="flex gap-4 p-4 rounded-2xl bg-gray-50 border border-transparent hover:border-brand-gold/20 transition-all group"
+                                                >
+                                                    <div className="w-20 h-20 bg-white rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-2 shadow-sm relative">
+                                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
+                                                        <button 
+                                                            onClick={() => removeFromCart(item.id)}
+                                                            className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all border border-gray-100"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <div className="flex-grow flex flex-col justify-between py-1">
+                                                        <div>
+                                                            <h4 className="font-bold text-brand-dark text-sm leading-tight line-clamp-1">{item.name}</h4>
+                                                            <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold">Premium Mustard Oil</p>
+                                                        </div>
+                                                        
+                                                        <div className="flex justify-between items-center">
+                                                            <div className="flex items-center gap-2 bg-white rounded-lg p-1 shadow-sm border border-gray-100">
+                                                                <button 
+                                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                                    className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-brand-gold transition-colors"
+                                                                >
+                                                                    <Minus size={12} />
+                                                                </button>
+                                                                <span className="text-xs font-black w-4 text-center text-brand-dark">{item.quantity}</span>
+                                                                <button 
+                                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                                    className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-brand-gold transition-colors"
+                                                                >
+                                                                    <Plus size={12} />
+                                                                </button>
+                                                            </div>
+                                                            <span className="text-sm font-bold text-brand-dark">₹{(item.price * item.quantity).toLocaleString()}</span>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    {/* Promo Code */}
+                                    <div className="mb-8">
+                                        <div className="relative">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Promo Code" 
+                                                className="w-full pl-4 pr-20 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none text-sm"
+                                            />
+                                            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-brand-gold hover:text-brand-dark transition-colors px-3 py-1">
+                                                APPLY
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Pricing Totals */}
+                                    <div className="space-y-4 border-t border-gray-100 pt-6">
+                                        <div className="flex justify-between text-gray-500 text-sm font-medium">
+                                            <span>Subtotal</span>
+                                            <span className="text-brand-dark">₹{getCartTotal().toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-500 text-sm font-medium">
+                                            <span>Shipping</span>
+                                            <span className="text-brand-green font-bold uppercase text-[10px] tracking-widest bg-green-50 px-2 py-1 rounded">Free</span>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-4 border-t border-gray-100 mt-2">
+                                            <span className="text-lg font-serif font-bold text-brand-dark">Grand Total</span>
+                                            <div className="text-right">
+                                                <span className="block text-2xl font-bold text-brand-gold leading-none">₹{getCartTotal().toLocaleString()}</span>
+                                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">All taxes included</span>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-
-                                <div className="border-t border-gray-100 pt-4 space-y-2 mb-6">
-                                    <div className="flex justify-between text-gray-600">
-                                        <span>Subtotal</span>
-                                        <span>₹{getCartTotal().toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between text-gray-600">
-                                        <span>Shipping</span>
-                                        <span>Free</span>
-                                    </div>
-                                    <div className="flex justify-between text-xl font-bold text-brand-dark pt-2 border-t border-gray-100 mt-2">
-                                        <span>Total</span>
-                                        <span className="text-brand-green">₹{getCartTotal().toLocaleString()}</span>
                                     </div>
                                 </div>
 
-                                <div className="bg-gray-50 p-4 rounded-xl flex items-start gap-3">
-                                    <Truck className="text-brand-dark flex-shrink-0 mt-1" size={20} />
-                                    <p className="text-xs text-gray-500">
-                                        Free standard shipping on all orders. Estimated delivery: 3-5 business days.
-                                    </p>
+                                {/* Bottom Info Area */}
+                                <div className="bg-brand-dark p-6 text-white">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                                            <Truck className="text-brand-gold" size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-brand-gold">Delivery Promise</p>
+                                            <p className="text-xs text-white/70">Arriving in 3-5 Business Days</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 pt-4 border-t border-white/10 opacity-50 justify-center">
+                                        <ShieldCheck size={14} />
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">100% Secure Transaction</span>
+                                    </div>
                                 </div>
-
-                            </div>
+                            </motion.div>
                         </div>
                     )}
 
