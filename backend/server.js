@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import crypto from 'crypto';
 import Otp from './models/Otp.js';
 
@@ -34,26 +34,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const requiredEnv = ['MONGODB_URI', 'EMAIL_SENDER_ADDRESS', 'EMAIL_SENDER_PASS'];
+const requiredEnv = ['MONGODB_URI', 'EMAIL_SENDER_ADDRESS', 'RESEND_API_KEY'];
 requiredEnv.forEach((key) => {
   if (!process.env[key]) {
     console.warn(`Missing env var: ${key}`);
   }
 });
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_SENDER_ADDRESS,
-    pass: process.env.EMAIL_SENDER_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const ensureEmailConfig = () => {
-  if (!process.env.EMAIL_SENDER_ADDRESS || !process.env.EMAIL_SENDER_PASS) {
-    throw Object.assign(new Error('Email sender credentials are not configured.'), { statusCode: 500 });
+  if (!process.env.EMAIL_SENDER_ADDRESS || !process.env.RESEND_API_KEY) {
+    throw Object.assign(new Error('Email sender credentials or Resend API key are not configured.'), { statusCode: 500 });
   }
 };
 
@@ -83,9 +75,9 @@ app.post('/api/auth/request-otp', async (req, res, next) => {
     );
 
     ensureEmailConfig();
-    await transporter.sendMail({
-      from: `"${process.env.EMAIL_FROM_NAME || 'B Forever Foods'}" <${process.env.EMAIL_SENDER_ADDRESS}>`,
-      to: normalizedEmail,
+    const { data, error } = await resend.emails.send({
+      from: `${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} <${process.env.EMAIL_SENDER_ADDRESS}>`,
+      to: [normalizedEmail],
       subject: `Verification code for your ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} account`,
       text: `Hello,\n\nYour verification code is ${code}.\n\nThis code will expire in ${OTP_EXPIRY_MINUTES} minutes. If you did not request this, please ignore this email.\n\nBest regards,\nThe ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} Team`,
       html: `
@@ -98,6 +90,10 @@ app.post('/api/auth/request-otp', async (req, res, next) => {
         </div>
       `,
     });
+
+    if (error) {
+        throw new Error(error.message);
+    }
 
     res.json({ message: 'Verification code sent to your email.' });
   } catch (error) {
@@ -142,13 +138,17 @@ app.get('/api/test-email', async (req, res) => {
   }
   try {
     ensureEmailConfig();
-    await transporter.sendMail({
+    const { data, error } = await resend.emails.send({
       from: `${process.env.EMAIL_FROM_NAME || 'Parity Foods'} <${process.env.EMAIL_SENDER_ADDRESS}>`,
-      to,
-      subject: 'Parity Foods — SMTP Test',
-      text: 'This is a test email from your Parity Foods backend. SMTP is working correctly!',
-      html: '<p>This is a <strong>test email</strong> from your Parity Foods backend. SMTP is working correctly! ✅</p>',
+      to: [to],
+      subject: 'Parity Foods — API Test',
+      text: 'This is a test email from your Parity Foods backend. Resend API is working correctly!',
+      html: '<p>This is a <strong>test email</strong> from your Parity Foods backend. Resend API is working correctly! ✅</p>',
     });
+
+    if (error) {
+        throw new Error(error.message);
+    }
     res.json({ success: true, message: `Test email sent to ${to}` });
   } catch (err) {
     console.error('Test email error:', err);
