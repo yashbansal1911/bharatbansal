@@ -13,6 +13,7 @@ import CartDrawer from './components/CartDrawer';
 import ShopPage from './pages/ShopPage';
 import CheckoutPage from './pages/CheckoutPage';
 import RecipePage from './pages/RecipePage';
+import RecipesPage from './pages/RecipesPage';
 
 // ScrollToTop component to ensure page starts at top on navigation
 const ScrollToTopWrapper = () => {
@@ -41,6 +42,7 @@ function App() {
               <Route path="/why-us" element={<WhyUsPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/recipes" element={<RecipesPage />} />
               <Route path="/recipes/:id" element={<RecipePage />} />
             </Routes>
           </main>

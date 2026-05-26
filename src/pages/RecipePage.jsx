@@ -35,7 +35,7 @@ const RecipePage = () => {
                 {/* Back button overlay */}
                 <div className="absolute top-28 left-6 z-20">
                     <Link
-                        to="/#recipes"
+                        to="/recipes"
                         className="flex items-center gap-2 bg-white/20 backdrop-blur-md text-white border border-white/30 px-4 py-2 rounded-full font-semibold text-sm hover:bg-white hover:text-brand-dark transition-all"
                     >
                         <ArrowLeft size={14} /> All Recipes

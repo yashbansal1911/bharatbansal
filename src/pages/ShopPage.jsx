@@ -72,13 +72,13 @@ const ShopPage = () => {
                             viewport={{ once: true }}
                             className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col"
                         >
-                            <div className="relative h-64 overflow-hidden bg-gray-50">
+                            <div className="relative h-72 overflow-hidden bg-gray-50/50 p-6 flex items-center justify-center">
                                 <img
                                     src={product.image}
                                     alt={product.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105"
                                 />
-                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-brand-dark">
+                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-brand-dark shadow-sm">
                                     {product.category}
                                 </div>
                             </div>

@@ -21,7 +21,7 @@ const Recipes = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                    {recipes.map((recipe, index) => (
+                    {recipes.slice(0, 3).map((recipe, index) => (
                         <motion.div
                             key={recipe.id}
                             initial={{ opacity: 0, y: 30 }}
