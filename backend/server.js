@@ -7,7 +7,9 @@ import crypto from 'crypto';
 import dns from 'dns';
 
 // Fix macOS Node link-local DNS resolution bugs with MongoDB Atlas SRV records
-dns.setServers(['8.8.8.8', '1.1.1.1']);
+if (process.platform === 'darwin') {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
 import Otp from './models/Otp.js';
 
 dotenv.config();
