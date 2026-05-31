@@ -47,7 +47,7 @@ requiredEnv.forEach((key) => {
   }
 });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_startup');
 
 const ensureEmailConfig = () => {
   if (!process.env.EMAIL_SENDER_ADDRESS || !process.env.RESEND_API_KEY) {
