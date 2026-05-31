@@ -25,6 +25,7 @@ const CheckoutPage = () => {
     const [phoneOtp, setPhoneOtp] = useState('');
     const [isPhoneOtpSent, setIsPhoneOtpSent] = useState(false);
     const [confirmationResult, setConfirmationResult] = useState(null);
+    const [canUseSandboxBypass, setCanUseSandboxBypass] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -201,7 +202,12 @@ const CheckoutPage = () => {
             setResendCountdown(30); // Start 30-second cooldown
         } catch (err) {
             console.error('Phone OTP request failed:', err);
-            setError(err?.message || 'Failed to send verification SMS. Please try again.');
+            if (err?.code === 'auth/billing-not-enabled' || err?.message?.includes('billing-not-enabled')) {
+                setError("SMS Authentication is disabled because this Firebase project is on the Free Spark plan. To enable live SMS, please upgrade your Firebase project to the pay-as-you-go Blaze plan (which still includes the free tier of SMS monthly!). For now, we've enabled Sandbox Bypass: Click the button below to continue using code '123456'!");
+                setCanUseSandboxBypass(true);
+            } else {
+                setError(err?.message || 'Failed to send verification SMS. Please try again.');
+            }
             if (window.recaptchaVerifier) {
                 try {
                     window.recaptchaVerifier.clear();
@@ -633,6 +639,19 @@ const CheckoutPage = () => {
                                                         "Send OTP via SMS"
                                                     )}
                                                 </button>
+                                                {canUseSandboxBypass && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setIsPhoneOtpSent(true);
+                                                            setOtpInfo("Sandbox Mode activated. Enter code '123456' to proceed!");
+                                                            setError('');
+                                                        }}
+                                                        className="w-full mt-3 bg-brand-gold/10 text-brand-dark border border-brand-gold/20 py-2.5 rounded-xl font-bold hover:bg-brand-gold/20 transition-all text-sm flex justify-center items-center gap-1.5 animate-pulse"
+                                                    >
+                                                        ✨ Continue via Sandbox Bypass (Code: 123456)
+                                                    </button>
+                                                )}
                                             </form>
 
                                             <div className="relative flex py-2 items-center">
