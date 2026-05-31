@@ -5,9 +5,9 @@ import { useCart } from '../context/CartContext';
 import { products } from '../data/products';
 
 const features = [
-    { icon: Leaf, label: 'Cold-Pressed' },
+    { icon: Leaf, label: 'Double Filtered' },
     { icon: Droplets, label: 'Omega 3 & 6 (PUFA)' },
-    { icon: Award, label: 'Farm Fresh' },
+    { icon: Award, label: 'Zero Preservatives' },
 ];
 
 const ProductShowcase = () => {
