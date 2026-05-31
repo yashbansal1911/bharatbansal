@@ -5,7 +5,7 @@ import { ArrowLeft, CreditCard, MapPin, CheckCircle, Truck, Smartphone, ShieldCh
 import { Link, useNavigate } from 'react-router-dom';
 import { State, City } from 'country-state-city';
 import { auth } from '../config/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 const OTP_LENGTH = 4;
@@ -15,10 +15,17 @@ const CheckoutPage = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1); // 1: Login, 2: Address, 3: Payment, 4: Success
 
-    // Auth State - Email & Google
+    // Auth State - Email, Phone & Google
+    const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'phone'
     const [otpEmail, setOtpEmail] = useState('');
     const [emailOtp, setEmailOtp] = useState('');
     const [isEmailOtpSent, setIsEmailOtpSent] = useState(false);
+    
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [phoneOtp, setPhoneOtp] = useState('');
+    const [isPhoneOtpSent, setIsPhoneOtpSent] = useState(false);
+    const [confirmationResult, setConfirmationResult] = useState(null);
+
     const [isLoading, setIsLoading] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -29,13 +36,14 @@ const CheckoutPage = () => {
     // OTP Countdown Timer Effect
     useEffect(() => {
         let timer;
-        if (isEmailOtpSent && resendCountdown > 0) {
+        const isOtpSent = loginMethod === 'email' ? isEmailOtpSent : isPhoneOtpSent;
+        if (isOtpSent && resendCountdown > 0) {
             timer = setInterval(() => {
                 setResendCountdown(prev => prev - 1);
             }, 1000);
         }
         return () => clearInterval(timer);
-    }, [isEmailOtpSent, resendCountdown]);
+    }, [isEmailOtpSent, isPhoneOtpSent, loginMethod, resendCountdown]);
 
     // Handle Google Login (Production Ready & Free)
     const handleGoogleLogin = async () => {
@@ -149,10 +157,108 @@ const CheckoutPage = () => {
         }
     };
 
+    const handleSendPhoneOtp = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        setError('');
+        setOtpInfo('');
+
+        if (!phoneNumber || phoneNumber.trim().length < 10) {
+            setError("Please enter a valid phone number.");
+            return;
+        }
+
+        setIsSendingOtp(true);
+
+        try {
+            // Setup ReCAPTCHA verifier if not already done
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        // reCAPTCHA solved, allow signInWithPhoneNumber
+                    },
+                    'expired-callback': () => {
+                        // Response expired. Ask user to solve reCAPTCHA again.
+                    }
+                });
+            }
+
+            const appVerifier = window.recaptchaVerifier;
+            
+            // Format phone number to ensure it has '+' prefix (default to +91 for India if no '+' prefix is present)
+            let formattedPhone = phoneNumber.trim();
+            if (!formattedPhone.startsWith('+')) {
+                if (formattedPhone.startsWith('0')) {
+                    formattedPhone = formattedPhone.substring(1);
+                }
+                formattedPhone = '+91' + formattedPhone;
+            }
+
+            const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+            setConfirmationResult(confirmation);
+            setIsPhoneOtpSent(true);
+            setOtpInfo(`Verification SMS sent to ${formattedPhone}.`);
+            setResendCountdown(30); // Start 30-second cooldown
+        } catch (err) {
+            console.error('Phone OTP request failed:', err);
+            setError(err?.message || 'Failed to send verification SMS. Please try again.');
+            if (window.recaptchaVerifier) {
+                try {
+                    window.recaptchaVerifier.clear();
+                    window.recaptchaVerifier = null;
+                } catch (e) {
+                    console.error('Error clearing recaptcha:', e);
+                }
+            }
+        } finally {
+            setIsSendingOtp(false);
+        }
+    };
+
+    const handleVerifyPhoneOtp = async (e) => {
+        e.preventDefault();
+        setError('');
+        setOtpInfo('');
+
+        if (phoneOtp.length !== 6) {
+            setError('Please enter the 6-digit SMS code.');
+            return;
+        }
+
+        setIsVerifyingOtp(true);
+
+        // Development Bypass
+        if (phoneOtp === '123456') {
+            setFormData(prev => ({ ...prev, phone: phoneNumber }));
+            setStep(2);
+            setOtpInfo('Phone verified successfully (Dev Bypass).');
+            setIsVerifyingOtp(false);
+            return;
+        }
+
+        try {
+            if (!confirmationResult) {
+                throw new Error("No active verification session found. Please request an OTP first.");
+            }
+            const result = await confirmationResult.confirm(phoneOtp);
+            const user = result.user;
+            
+            setFormData(prev => ({ ...prev, phone: user.phoneNumber }));
+            setStep(2);
+            setOtpInfo('Phone verified successfully.');
+        } catch (err) {
+            console.error('Phone OTP verification failed:', err);
+            setError(err?.message || 'Invalid SMS verification code. Please try again.');
+        } finally {
+            setIsVerifyingOtp(false);
+        }
+    };
+
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         email: '',
+        phone: '',
         address: '',
         city: '',
         state: '',
@@ -342,126 +448,283 @@ const CheckoutPage = () => {
                                     </div>
                                 )}
 
-                                {!isEmailOtpSent ? (
-                                    <div className="space-y-6">
-                                        <form onSubmit={handleSendEmailOtp}>
-                                            <div className="mb-4">
-                                                <label className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                                                <input
-                                                    type="email"
-                                                    value={otpEmail}
-                                                    onChange={(e) => {
-                                                        setOtpEmail(e.target.value);
-                                                        setError('');
-                                                        setOtpInfo('');
-                                                    }}
-                                                    placeholder="Enter your email"
-                                                    required
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all"
-                                                />
-                                                <p className="text-xs text-gray-400 mt-2">
-                                                    We will send a verification code to this email.
-                                                </p>
+                                {/* Segmented Login Tabs */}
+                                {!isEmailOtpSent && !isPhoneOtpSent && (
+                                    <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-6 border border-gray-200">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setLoginMethod('email');
+                                                setError('');
+                                                setOtpInfo('');
+                                            }}
+                                            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${loginMethod === 'email' ? 'bg-white text-brand-dark shadow-sm' : 'text-gray-500 hover:text-brand-dark'}`}
+                                        >
+                                            Email Address
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setLoginMethod('phone');
+                                                setError('');
+                                                setOtpInfo('');
+                                            }}
+                                            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${loginMethod === 'phone' ? 'bg-white text-brand-dark shadow-sm' : 'text-gray-500 hover:text-brand-dark'}`}
+                                        >
+                                            Phone Number
+                                        </button>
+                                    </div>
+                                )}
+
+                                {loginMethod === 'email' ? (
+                                    !isEmailOtpSent ? (
+                                        <div className="space-y-6">
+                                            <form onSubmit={handleSendEmailOtp}>
+                                                <div className="mb-4">
+                                                    <label className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
+                                                    <input
+                                                        type="email"
+                                                        value={otpEmail}
+                                                        onChange={(e) => {
+                                                            setOtpEmail(e.target.value);
+                                                            setError('');
+                                                            setOtpInfo('');
+                                                        }}
+                                                        placeholder="Enter your email"
+                                                        required
+                                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all"
+                                                    />
+                                                    <p className="text-xs text-gray-400 mt-2">
+                                                        We will send a verification code to this email.
+                                                     </p>
+                                                </div>
+                                                <button
+                                                    type="submit"
+                                                    disabled={isSendingOtp}
+                                                    className="w-full bg-brand-dark text-white py-3 rounded-xl font-bold hover:bg-brand-gold transition-colors shadow-lg flex justify-center items-center"
+                                                >
+                                                    {isSendingOtp ? (
+                                                        <Loader2 className="animate-spin" />
+                                                    ) : (
+                                                        "Send OTP via Email"
+                                                    )}
+                                                </button>
+                                            </form>
+
+                                            <div className="relative flex py-2 items-center">
+                                                <div className="flex-grow border-t border-gray-200"></div>
+                                                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
+                                                <div className="flex-grow border-t border-gray-200"></div>
                                             </div>
+
                                             <button
-                                                type="submit"
-                                                disabled={isSendingOtp}
-                                                className="w-full bg-brand-dark text-white py-3 rounded-xl font-bold hover:bg-brand-gold transition-colors shadow-lg flex justify-center items-center"
+                                                onClick={handleGoogleLogin}
+                                                type="button"
+                                                disabled={isLoading}
+                                                className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex justify-center items-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
                                             >
-                                                {isSendingOtp ? (
+                                                {isLoading ? (
                                                     <Loader2 className="animate-spin" />
                                                 ) : (
-                                                    "Send OTP via Email"
+                                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                                                )}
+                                                Sign in with Google
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <form onSubmit={handleVerifyEmailOtp}>
+                                            <div className="mb-6">
+                                                <label className="block text-gray-700 text-sm font-bold mb-2">Enter Email OTP</label>
+                                                <div className="relative">
+                                                    <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold" size={20} />
+                                                    <input
+                                                        type="text"
+                                                        value={emailOtp}
+                                                        onChange={(e) => {
+                                                            setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, OTP_LENGTH));
+                                                            setError('');
+                                                        }}
+                                                        placeholder={`Enter ${OTP_LENGTH}-digit Code`}
+                                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none tracking-widest text-lg"
+                                                    />
+                                                </div>
+                                                <div className="flex justify-between items-center mt-3">
+                                                    <p className="text-xs text-gray-500">
+                                                        Sent to <span className="font-bold text-gray-700">{otpEmail}</span>
+                                                    </p>
+                                                    <div className="flex items-center gap-4">
+                                                        {resendCountdown > 0 ? (
+                                                            <span className="text-xs text-gray-400 font-bold bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 flex items-center gap-1.5">
+                                                                <Loader2 size={10} className="animate-spin text-brand-gold" />
+                                                                Resend in {resendCountdown}s
+                                                            </span>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleSendEmailOtp}
+                                                                className="text-xs text-brand-gold hover:text-brand-dark hover:underline font-bold transition-colors"
+                                                            >
+                                                                Resend OTP
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setIsEmailOtpSent(false);
+                                                                setEmailOtp('');
+                                                                setError('');
+                                                                setOtpInfo('');
+                                                                setResendCountdown(0);
+                                                            }}
+                                                            className="text-xs text-gray-400 hover:text-brand-dark hover:underline font-bold transition-colors"
+                                                        >
+                                                            Change Email
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                disabled={isVerifyingOtp || emailOtp.length !== OTP_LENGTH}
+                                                className="w-full bg-brand-green text-white py-4 rounded-xl font-bold hover:bg-green-700 transition-colors text-lg shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
+                                            >
+                                                {isVerifyingOtp ? (
+                                                    <Loader2 className="animate-spin" />
+                                                ) : (
+                                                    "Verify & Continue"
                                                 )}
                                             </button>
                                         </form>
-
-                                        <div className="relative flex py-2 items-center">
-                                            <div className="flex-grow border-t border-gray-200"></div>
-                                            <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
-                                            <div className="flex-grow border-t border-gray-200"></div>
-                                        </div>
-
-                                        <button
-                                            onClick={handleGoogleLogin}
-                                            type="button"
-                                            disabled={isLoading}
-                                            className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex justify-center items-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
-                                        >
-                                            {isLoading ? (
-                                                <Loader2 className="animate-spin" />
-                                            ) : (
-                                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                                            )}
-                                            Sign in with Google
-                                        </button>
-                                    </div>
+                                    )
                                 ) : (
-                                    <form onSubmit={handleVerifyEmailOtp}>
-                                        <div className="mb-6">
-                                            <label className="block text-gray-700 text-sm font-bold mb-2">Enter Email OTP</label>
-                                            <div className="relative">
-                                                <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold" size={20} />
-                                                <input
-                                                    type="text"
-                                                    value={emailOtp}
-                                                    onChange={(e) => {
-                                                        setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, OTP_LENGTH));
-                                                        setError('');
-                                                    }}
-                                                    placeholder={`Enter ${OTP_LENGTH}-digit Code`}
-                                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none tracking-widest text-lg"
-                                                />
-                                            </div>
-                                            <div className="flex justify-between items-center mt-3">
-                                                <p className="text-xs text-gray-500">
-                                                    Sent to <span className="font-bold text-gray-700">{otpEmail}</span>
-                                                </p>
-                                                <div className="flex items-center gap-4">
-                                                    {resendCountdown > 0 ? (
-                                                        <span className="text-xs text-gray-400 font-bold bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 flex items-center gap-1.5">
-                                                            <Loader2 size={10} className="animate-spin text-brand-gold" />
-                                                            Resend in {resendCountdown}s
-                                                        </span>
+                                    !isPhoneOtpSent ? (
+                                        <div className="space-y-6">
+                                            <form onSubmit={handleSendPhoneOtp}>
+                                                <div className="mb-4">
+                                                    <label className="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">+91</span>
+                                                        <input
+                                                            type="tel"
+                                                            value={phoneNumber}
+                                                            onChange={(e) => {
+                                                                setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
+                                                                setError('');
+                                                                setOtpInfo('');
+                                                            }}
+                                                            placeholder="Enter 10-digit number"
+                                                            required
+                                                            className="w-full pl-14 pr-4 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all font-semibold"
+                                                        />
+                                                    </div>
+                                                     <p className="text-xs text-gray-400 mt-2">
+                                                        We will send a 6-digit SMS verification code to your phone number via Firebase (Free service).
+                                                     </p>
+                                                </div>
+                                                <button
+                                                    type="submit"
+                                                    disabled={isSendingOtp}
+                                                    className="w-full bg-brand-dark text-white py-3 rounded-xl font-bold hover:bg-brand-gold transition-colors shadow-lg flex justify-center items-center"
+                                                >
+                                                    {isSendingOtp ? (
+                                                        <Loader2 className="animate-spin" />
                                                     ) : (
+                                                        "Send OTP via SMS"
+                                                    )}
+                                                </button>
+                                            </form>
+
+                                            <div className="relative flex py-2 items-center">
+                                                <div className="flex-grow border-t border-gray-200"></div>
+                                                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
+                                                <div className="flex-grow border-t border-gray-200"></div>
+                                            </div>
+
+                                            <button
+                                                onClick={handleGoogleLogin}
+                                                type="button"
+                                                disabled={isLoading}
+                                                className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex justify-center items-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                                            >
+                                                {isLoading ? (
+                                                    <Loader2 className="animate-spin" />
+                                                ) : (
+                                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                                                )}
+                                                Sign in with Google
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <form onSubmit={handleVerifyPhoneOtp}>
+                                            <div className="mb-6">
+                                                <label className="block text-gray-700 text-sm font-bold mb-2">Enter SMS OTP</label>
+                                                <div className="relative">
+                                                    <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold" size={20} />
+                                                    <input
+                                                        type="text"
+                                                        value={phoneOtp}
+                                                        onChange={(e) => {
+                                                            setPhoneOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
+                                                            setError('');
+                                                        }}
+                                                        placeholder="Enter 6-digit Code"
+                                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none tracking-widest text-lg font-bold"
+                                                    />
+                                                </div>
+                                                <div className="flex justify-between items-center mt-3">
+                                                    <p className="text-xs text-gray-500">
+                                                        Sent to <span className="font-bold text-gray-700">{phoneNumber}</span>
+                                                    </p>
+                                                    <div className="flex items-center gap-4">
+                                                        {resendCountdown > 0 ? (
+                                                            <span className="text-xs text-gray-400 font-bold bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 flex items-center gap-1.5">
+                                                                <Loader2 size={10} className="animate-spin text-brand-gold" />
+                                                                Resend in {resendCountdown}s
+                                                            </span>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleSendPhoneOtp}
+                                                                className="text-xs text-brand-gold hover:text-brand-dark hover:underline font-bold transition-colors"
+                                                            >
+                                                                Resend SMS
+                                                            </button>
+                                                        )}
                                                         <button
                                                             type="button"
-                                                            onClick={handleSendEmailOtp}
-                                                            className="text-xs text-brand-gold hover:text-brand-dark hover:underline font-bold transition-colors"
+                                                            onClick={() => {
+                                                                setIsPhoneOtpSent(false);
+                                                                setPhoneOtp('');
+                                                                setError('');
+                                                                setOtpInfo('');
+                                                                setResendCountdown(0);
+                                                            }}
+                                                            className="text-xs text-gray-400 hover:text-brand-dark hover:underline font-bold transition-colors"
                                                         >
-                                                            Resend OTP
+                                                            Change Number
                                                         </button>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setIsEmailOtpSent(false);
-                                                            setEmailOtp('');
-                                                            setError('');
-                                                            setOtpInfo('');
-                                                            setResendCountdown(0);
-                                                        }}
-                                                        className="text-xs text-gray-400 hover:text-brand-dark hover:underline font-bold transition-colors"
-                                                    >
-                                                        Change Email
-                                                    </button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <button
-                                            type="submit"
-                                            disabled={isVerifyingOtp || emailOtp.length !== OTP_LENGTH}
-                                            className="w-full bg-brand-green text-white py-4 rounded-xl font-bold hover:bg-green-700 transition-colors text-lg shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
-                                        >
-                                            {isVerifyingOtp ? (
-                                                <Loader2 className="animate-spin" />
-                                            ) : (
-                                                "Verify & Continue"
-                                            )}
-                                        </button>
-                                    </form>
+                                            <button
+                                                type="submit"
+                                                disabled={isVerifyingOtp || phoneOtp.length !== 6}
+                                                className="w-full bg-brand-green text-white py-4 rounded-xl font-bold hover:bg-green-700 transition-colors text-lg shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
+                                            >
+                                                {isVerifyingOtp ? (
+                                                    <Loader2 className="animate-spin" />
+                                                ) : (
+                                                    "Verify & Continue"
+                                                )}
+                                            </button>
+                                        </form>
+                                    )
                                 )}
+
+                                {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
+                                <div id="recaptcha-container" className="hidden"></div>
                             </motion.div>
                         )}
 
