@@ -43,7 +43,7 @@ Environment variables (see `backend/.env.example`):
 | `PORT` | API port (default `5000`) |
 | `CLIENT_ORIGIN` | Allowed frontend origins (comma separated) |
 | `OTP_EXPIRY_MINUTES` | Minutes before an OTP expires |
-| `EMAIL_SENDER_ADDRESS` | Gmail address (`saurav4ryou707997@gmail.com`) |
+| `EMAIL_SENDER_ADDRESS` | Gmail address (``) |
 | `EMAIL_SENDER_PASS` | Gmail App Password used by Nodemailer |
 | `EMAIL_FROM_NAME` | Sender name shown in the email |
 
