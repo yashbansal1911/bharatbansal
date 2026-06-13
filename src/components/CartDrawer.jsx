@@ -61,31 +61,42 @@ const CartDrawer = () => {
                                         <div className="w-20 h-20 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
                                             <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
                                         </div>
-                                        <div className="flex-grow">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h3 className="font-bold text-brand-dark line-clamp-1">{item.name}</h3>
+                                                                        <div className="flex-grow">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h3 className="font-bold text-brand-dark text-sm leading-snug">{item.name}</h3>
                                                 <button
                                                     onClick={() => removeFromCart(item.id)}
-                                                    className="text-gray-400 hover:text-red-500 transition-colors"
+                                                    className="text-gray-400 hover:text-red-500 transition-colors ml-2 flex-shrink-0"
                                                 >
-                                                    <Trash2 size={18} />
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
-                                            <p className="text-sm text-gray-500 mb-3">{item.currency}{item.price}</p>
-                                            <div className="flex items-center gap-3">
-                                                <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                    className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"
-                                                >
-                                                    <Minus size={14} />
-                                                </button>
-                                                <span className="font-bold w-4 text-center">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                    className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50"
-                                                >
-                                                    <Plus size={14} />
-                                                </button>
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className="bg-brand-gold/10 text-brand-gold text-[10px] px-2 py-0.5 rounded-full font-bold">{item.size}</span>
+                                                <span className="text-xs text-gray-400 font-medium">{item.currency}{item.price} each</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-semibold text-gray-500">Qty:</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                            className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-500 transition-colors"
+                                                        >
+                                                            <Minus size={12} />
+                                                        </button>
+                                                        <span className="font-bold w-4 text-center text-sm">{item.quantity}</span>
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                            className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-500 transition-colors"
+                                                        >
+                                                            <Plus size={12} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="font-bold text-brand-dark text-sm">{item.currency}{(item.price * item.quantity).toLocaleString()}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
