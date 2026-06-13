@@ -27,15 +27,23 @@ const Hero = () => {
                     style={{ background: 'radial-gradient(circle, rgba(250,200,80,0.2) 0%, transparent 60%)' }}
                 />
             </div>
-            {/* Darker overlay for text crispness */}
-            <div className="absolute inset-0 bg-brand-green z-10" />
+            {/* Darker overlay for text crispness with embedded family meal image */}
+            <div className="absolute inset-0 z-10">
+                <img
+                    src="/images/family-meal.jpg"
+                    alt="Family Meal"
+                    className="w-full h-full object-cover opacity-40 object-center"
+                />
+                <div className="absolute inset-0 bg-brand-green/70 mix-blend-multiply" />
+            </div>
 
             {/* Content */}
-            <div className="relative z-20 container mx-auto px-6 text-center text-white mt-20">
+            <div className="relative z-20 container mx-auto px-6 text-center lg:text-left text-white mt-20 flex flex-col items-center lg:items-start">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1 }}
+                    className="max-w-2xl lg:max-w-xl"
                 >
                     <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full mb-8 border border-white/20">
                         <span className="w-2 h-2 bg-brand-gold rounded-full animate-pulse" />
@@ -47,11 +55,11 @@ const Hero = () => {
                         <span className="text-brand-gold italic">Tradition</span>
                     </h1>
 
-                    <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+                    <p className="text-xl md:text-2xl text-gray-200 lg:mx-0 max-w-2xl mb-12 font-light leading-relaxed">
                         Cold-pressed kachi ghani mustard oil — straight from the fields to your kitchen. Pure, bold, and unadulterated.
                     </p>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6">
                         <a
                             href="#products"
                             className="bg-brand-gold text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-brand-dark transition-all flex items-center shadow-lg hover:shadow-xl"
