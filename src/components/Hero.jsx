@@ -51,8 +51,8 @@ const Hero = () => {
                     </div>
 
                     <h1 className="text-6xl md:text-8xl font-serif font-bold mb-6 leading-tight">
-                        The Taste of <br />
-                        <span className="text-brand-gold italic">Tradition</span>
+                        Parity Premium <br />
+                        <span className="text-brand-gold italic">Mustard Oil</span>
                     </h1>
 
                     <p className="text-xl md:text-2xl text-gray-200 lg:mx-0 max-w-2xl mb-12 font-light leading-relaxed">

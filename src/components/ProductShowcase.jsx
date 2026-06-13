@@ -55,7 +55,7 @@ const ProductShowcase = () => {
                 <div className="text-center mb-20">
                     <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-4">Our Products</h3>
                     <h2 className="text-5xl md:text-6xl font-serif font-bold text-brand-dark leading-tight mb-6">
-                        Pure Mustard Oil, <br />Cold-Pressed
+                        Pure Parity <br />Mustard Oil
                     </h2>
                     <p className="text-gray-500 max-w-lg mx-auto text-lg">
                         Choose the pack size that fits your kitchen. Slide to view all options.
