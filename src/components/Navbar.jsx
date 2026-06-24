@@ -26,6 +26,7 @@ const Navbar = () => {
 
     const navLinks = [
         { name: 'Home', path: '/' },
+        { name: 'Oils', path: '/parity-kachi-ghani-mustard-oil' },
         // { name: 'Shop', path: '/shop' },
         { name: 'Our Story', path: '/about' },
         { name: 'Why Us', path: '/why-us' },

@@ -51,7 +51,7 @@ const Hero = () => {
                     </div>
 
                     <h1 className="text-6xl md:text-8xl font-serif font-bold mb-6 leading-tight">
-                        Parity Premium <br />
+                        Parity <br />
                         <span className="text-brand-gold italic">Mustard Oil</span>
                     </h1>
 

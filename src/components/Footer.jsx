@@ -2,9 +2,9 @@ import React from 'react';
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const Footer = () => {
+const Footer = ({ className = "mt-20" }) => {
     return (
-        <footer id="footer" className="bg-brand-dark text-white pt-24 pb-12 rounded-t-[3rem] mt-20">
+        <footer id="footer" className={`bg-brand-dark text-white pt-24 pb-12 rounded-t-[3rem] ${className}`}>
             <div className="container mx-auto px-6">
                 <div className="flex flex-col md:flex-row justify-between items-start mb-20">
                     <div className="max-w-md mb-10 md:mb-0">
