@@ -14,7 +14,7 @@ export const products = [
         id: 2,
         name: "Parity Mustard Oil – 5L",
         category: "Oils",
-        image: "/images/mustard-oil-new.jpg",
+        image: "/images/mustard-oil-5l.jpg",
         price: 850,
         currency: "₹",
         size: "5 Litres",
@@ -33,3 +33,4 @@ export const products = [
         details: "Traditional cold-pressed (kachi ghani) mustard oil in a sturdy 15kg tin container. Perfect for commercial use, catering, and heavy kitchen cooking, keeping flavor fresh and well-protected."
     }
 ];
+
