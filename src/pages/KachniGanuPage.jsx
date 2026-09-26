@@ -138,7 +138,7 @@ const KachniGanuPage = () => {
                     style={{ zIndex: 2 }}
                 >
                     <img
-                        src="/images/mustard-oil-new.jpg"
+                        src="/images/parity-mustard-oil-bottle.png"
                         alt="Parity Mustard Oil – 5L"
                         className="max-h-[85%] max-w-[85%] object-contain select-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] translate-y-[8%]"
                     />
