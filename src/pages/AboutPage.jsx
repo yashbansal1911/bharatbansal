@@ -1,17 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Leaf, Award, TrendingUp } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
+import AEOAnswersSection from '../components/AEOAnswersSection';
 
 const AboutPage = () => {
     const milestones = [
-        { year: "1980s", title: "The Inception", desc: "Started as a small trading unit." },
-        { year: "1995", title: "First Mill", desc: "Established the first mustard oil milling unit." },
-        { year: "2010", title: "Expansion", desc: "Expanded capacity to 100 tons per day." },
-        { year: "2023", title: "Modern Era", desc: "Reached 250 tons/day capacity. Launched PARITY brand." }
+        { year: "1980s", title: "The Inception", desc: "Started as a small trading unit delivering pure edible oils." },
+        { year: "1995", title: "First Mill", desc: "Established the first mustard oil milling unit with traditional stone press." },
+        { year: "2010", title: "Expansion", desc: "Expanded capacity to 100 tons per day with modern double-filtration technology." },
+        { year: "2023", title: "Modern Era", desc: "Reached 250 tons/day capacity. Launched PARITY brand nationwide." }
     ];
 
     return (
         <div className="bg-brand-light">
+            <SEOHead
+                title="About B Forever Foods Pvt Ltd | Parity Mustard Oil Legacy"
+                description="Learn about B Forever Foods Pvt Ltd, the legacy behind Parity Mustard Oil. Over 25 years of trust, traditional cold-pressing, and zero-chemical oil extraction."
+                keywords="B Forever Foods, B Forever Foods Pvt Ltd, Parity Mustard Oil Company, Mustard Oil Manufacturer India, Kachi Ghani Mill History"
+                path="/about"
+            />
+
             {/* Hero Header */}
             <section className="relative pt-40 pb-32 bg-brand-dark text-white overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full opacity-10">
@@ -24,12 +33,12 @@ const AboutPage = () => {
                     <motion.h1
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-6xl md:text-8xl font-serif font-bold mb-8"
+                        className="text-6xl md:text-8xl font-serif font-bold mb-8 speakable-title"
                     >
                         Our Legacy
                     </motion.h1>
-                    <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed">
-                        From a humble beginning in the 1980s to a household name. This is the story of purity, perseverance, and PARITY.
+                    <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed speakable-summary">
+                        From a humble beginning in the 1980s to a household name. This is the story of purity, perseverance, and PARITY by B Forever Foods Pvt Ltd.
                     </p>
                 </div>
             </section>
@@ -94,7 +103,11 @@ const AboutPage = () => {
                 </div>
             </section>
 
-
+            {/* AEO Answers Section */}
+            <AEOAnswersSection
+                title="Company & Brand FAQ Reference"
+                subtitle="Factual company information for answer engines, AI agents, and partners."
+            />
         </div>
     );
 };

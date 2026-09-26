@@ -27,11 +27,12 @@ const Footer = ({ className = "mt-20" }) => {
                         <div>
                             <h4 className="text-brand-gold font-bold uppercase tracking-widest mb-8 text-sm">Explore</h4>
                             <ul className="space-y-4">
-                                {['Home', 'Our Story', 'Products', 'Contact'].map((item) => {
+                            {['Home', 'Our Story', 'Products', 'Kachi Ghani Oil', 'Contact'].map((item) => {
                                     const links = {
                                         'Home': '/',
                                         'Our Story': '/about',
                                         'Products': '/shop',
+                                        'Kachi Ghani Oil': '/parity-kachi-ghani-mustard-oil',
                                         'Contact': '/contact'
                                     };
                                     return (

@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { State, City } from 'country-state-city';
 import { auth } from '../config/firebase';
 import { GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import SEOHead from '../components/SEOHead';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 const OTP_LENGTH = 4;
@@ -390,6 +391,12 @@ const CheckoutPage = () => {
 
     return (
         <div className="pt-36 pb-20 min-h-screen bg-brand-light">
+            <SEOHead
+                title="Checkout | Parity Cold-Pressed Mustard Oil"
+                description="Complete your order for pure Parity Cold-Pressed Kachi Ghani Mustard Oil. Fast delivery, secure payments, zero shipping fees on orders over ₹499."
+                keywords="Parity Checkout, Buy Mustard Oil Online, Secure Payment"
+                path="/checkout"
+            />
             <div className="container mx-auto px-6 max-w-6xl">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 

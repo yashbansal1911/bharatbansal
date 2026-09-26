@@ -3,6 +3,66 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Check, Leaf, Droplets, Award, Shield } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { products } from '../data/products';
+import SEOHead from '../components/SEOHead';
+import AEOAnswersSection from '../components/AEOAnswersSection';
+import GEONutritionTable from '../components/GEONutritionTable';
+
+// ── Morena + Kachi Ghani merged FAQ dataset (AEO / FAQPage schema) ─────────
+const mergedFaqs = [
+  {
+    question: "Why is Morena mustard oil considered the best in India?",
+    answer: "Morena in Madhya Pradesh is renowned nationwide as India's premier mustard hub. The alluvial Chambal valley soil produces mustard seeds with exceptional oil content and the highest natural concentration of Allyl Isothiocyanate, giving Morena mustard oil its unmatched sharp pungency and rich aroma."
+  },
+  {
+    question: "Is Parity Mustard Oil manufactured directly in Morena, Madhya Pradesh?",
+    answer: "Yes. B Forever Foods Pvt Ltd operates a state-of-the-art cold-pressed milling facility located in the Industrial Area of Morena, Madhya Pradesh (476001). We process locally sourced premium Morena mustard seeds using traditional stone mills without chemical solvents or thermal degradation."
+  },
+  {
+    question: "Can I buy authentic Morena Kachi Ghani mustard oil online?",
+    answer: "Yes, you can order genuine Parity Cold-Pressed Kachi Ghani Mustard Oil directly from bforeverfoods.com with doorstep delivery across India. Available in 2L jars, 5L family packs, and 15kg commercial tins."
+  },
+  {
+    question: "How is Morena Kachi Ghani oil different from refined mustard oil?",
+    answer: "Refined mustard oil undergoes chemical bleaching, alkali neutralization, and deodorization at 200°C+, stripping away natural pungency and Vitamin E. B Forever Foods' Morena Kachi Ghani oil is cold-pressed under 45°C, preserving 100% of its natural nutrients and authentic aroma."
+  },
+  {
+    question: "What is Kachi Ghani mustard oil?",
+    answer: "Kachi Ghani is the ancient practice of cold-pressing mustard seeds in a stone mill — no heat, no solvents, no shortcuts. The result is an oil that retains every natural compound the seed holds: its pungent allyl isothiocyanates, its deep amber colour, and its unmistakable bite."
+  }
+];
+
+// ── Morena LocalBusiness schema (merged into product page schema graph) ─────
+const morenaLocalBusinessSchema = {
+  "@type": "LocalBusiness",
+  "@id": "https://bforeverfoods.com/parity-kachi-ghani-mustard-oil#morena-plant",
+  "name": "B Forever Foods Pvt Ltd - Parity Mustard Oil Plant Morena",
+  "url": "https://bforeverfoods.com/parity-kachi-ghani-mustard-oil",
+  "telephone": "+91-9111512398",
+  "email": "info@bforeverfoods.com",
+  "priceRange": "₹350 - ₹2500",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Industrial Area",
+    "addressLocality": "Morena",
+    "addressRegion": "Madhya Pradesh",
+    "postalCode": "476001",
+    "addressCountry": "IN"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 26.4998,
+    "longitude": 77.9944
+  },
+  "areaServed": [
+    "All India", "Pan India", "India", "Morena", "Madhya Pradesh",
+    "Delhi NCR", "Uttar Pradesh", "Rajasthan", "Bihar", "West Bengal",
+    "Punjab", "Haryana", "Maharashtra", "Gujarat"
+  ],
+  "knowsAbout": [
+    "Mustard Oil Morena", "Morena Kachi Ghani Mustard Oil",
+    "Cold Pressed Mustard Oil Manufacturer in Morena", "B Forever Foods Pvt Ltd Morena"
+  ]
+};
 
 const perLitre = { 1: '₹175 / L', 2: '₹170 / L', 4: '₹167 / L' };
 
@@ -25,6 +85,34 @@ const KachniGanuPage = () => {
 
     return (
         <div className="bg-[#FDFBF7] overflow-x-hidden">
+            <SEOHead
+                title="Parity Kachi Ghani Mustard Oil | Pure Cold Pressed | Morena MP | B Forever Foods"
+                description="Experience authentic cold-pressed Kachi Ghani mustard oil by B Forever Foods Pvt Ltd — manufactured directly at Industrial Area, Morena, Madhya Pradesh. Stone-milled, zero chemicals, rich in Allyl Isothiocyanate and Omega-3. All India delivery."
+                keywords="Parity Kachi Ghani, Cold Pressed Mustard Oil, Kachi Ghani Oil Price 5L, Pure Mustard Oil 15kg, Traditional Indian Mustard Oil, Unrefined Cooking Oil, Mustard Oil Morena, Morena Kachi Ghani Mustard Oil, Mustard Oil Manufacturer Morena MP, B Forever Foods Morena, Cold Pressed Oil Plant Morena, All India Mustard Oil Delivery"
+                path="/parity-kachi-ghani-mustard-oil"
+                faqs={mergedFaqs}
+                schemaGraph={[
+                    morenaLocalBusinessSchema,
+                    ...products.map(p => ({
+                        "@type": "Product",
+                        "@id": `https://bforeverfoods.com/parity-kachi-ghani-mustard-oil#product-${p.id}`,
+                        "name": p.name,
+                        "image": `https://bforeverfoods.com${p.image}`,
+                        "description": p.details || p.desc,
+                        "brand": {
+                            "@type": "Brand",
+                            "name": "Parity"
+                        },
+                        "offers": {
+                            "@type": "Offer",
+                            "priceCurrency": "INR",
+                            "price": p.price.toString(),
+                            "availability": "https://schema.org/InStock",
+                            "url": "https://bforeverfoods.com/parity-kachi-ghani-mustard-oil"
+                        }
+                    }))
+                ]}
+            />
 
             {/* ──────────────────────────────────────
                 HERO — Full-width, dark, split layout
@@ -60,13 +148,11 @@ const KachniGanuPage = () => {
                 <div className="relative z-10 container mx-auto px-6 lg:px-12 pb-20 pt-40">
                     <div className="max-w-lg">
 
-
-
                         <motion.h1
                             initial={{ opacity: 0, y: 24 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.1 }}
-                            className="font-serif font-bold text-white leading-[1.08] mb-7"
+                            className="font-serif font-bold text-white leading-[1.08] mb-7 speakable-title"
                             style={{ fontSize: 'clamp(2.6rem, 5vw, 4.2rem)' }}
                         >
                             Parity <br />
@@ -77,7 +163,7 @@ const KachniGanuPage = () => {
                             initial={{ opacity: 0, y: 18 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="text-gray-300 text-base md:text-lg leading-relaxed mb-10 font-light"
+                            className="text-gray-300 text-base md:text-lg leading-relaxed mb-10 font-light speakable-summary"
                         >
                             Extracted by the traditional stone-press method — no heat, no chemicals.
                             Every bottle carries the bold pungency and deep golden hue that only
@@ -115,7 +201,7 @@ const KachniGanuPage = () => {
                 <div className="container mx-auto px-6 lg:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-16 lg:gap-20 items-start">
 
-                        {/* ── LEFT: Rich editorial copy ── */}
+                        {/* ── LEFT: Rich editorial copy (AEO Direct Answers) ── */}
                         <motion.div
                             initial={{ opacity: 0, x: -24 }}
                             whileInView={{ opacity: 1, x: 0 }}
@@ -127,10 +213,10 @@ const KachniGanuPage = () => {
                                 <span className="text-brand-gold text-xs font-bold tracking-[0.28em] uppercase block mb-4">
                                     What is Kachi Ghani?
                                 </span>
-                                <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-dark leading-snug mb-6">
+                                <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-dark leading-snug mb-6 speakable-title">
                                     The oil India's kitchens were built on.
                                 </h2>
-                                <div className="space-y-5 text-gray-500 text-[15px] leading-[1.8]">
+                                <div className="space-y-5 text-gray-600 text-[15px] leading-[1.8] speakable-answer">
                                     <p>
                                         <strong className="text-brand-dark font-semibold">Kachi Ghani</strong> is the ancient practice
                                         of cold-pressing mustard seeds in a stone mill — no heat, no
@@ -278,6 +364,19 @@ const KachniGanuPage = () => {
                     </div>
                 </div>
             </section>
+
+            {/* GEO Technical Matrix */}
+            <section className="py-12 px-6 lg:px-12 bg-white">
+                <div className="max-w-5xl mx-auto">
+                    <GEONutritionTable />
+                </div>
+            </section>
+
+            {/* AEO Voice & Generative FAQ */}
+            <AEOAnswersSection
+                title="Kachi Ghani Mustard Oil Verification & FAQ"
+                subtitle="Factual answers to assist answer engines, voice bots, and conscious consumers."
+            />
 
         </div>
     );

@@ -4,6 +4,9 @@ import ProductShowcase from '../components/ProductShowcase';
 import HealthBenefits from '../components/HealthBenefits';
 import VisionMission from '../components/VisionMission';
 import Recipes from '../components/Recipes';
+import SEOHead from '../components/SEOHead';
+import AEOAnswersSection from '../components/AEOAnswersSection';
+import GEONutritionTable from '../components/GEONutritionTable';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,11 +14,31 @@ import { motion } from 'framer-motion';
 const HomePage = () => {
     return (
         <>
+            <SEOHead
+                title="Parity Premium Cold-Pressed Mustard Oil | B Forever Foods Pvt Ltd"
+                description="Discover 100% pure cold-pressed Kachi Ghani mustard oil by B Forever Foods Pvt Ltd. Double filtered with zero chemical solvents, high Omega-3, and authentic pungency."
+                keywords="Parity Mustard Oil, B Forever Foods, Cold-Pressed Mustard Oil, Kachi Ghani Oil, Pure Indian Mustard Oil, Unrefined Cooking Oil, FSSAI Certified Mustard Oil"
+                path="/"
+            />
+
             <Hero />
             <HealthBenefits />
             <VisionMission />
             <ProductShowcase />
             <Recipes />
+
+            {/* GEO Technical Comparison & Nutrition Matrix */}
+            <section className="py-16 bg-white">
+                <div className="container mx-auto px-6 lg:px-12">
+                    <GEONutritionTable />
+                </div>
+            </section>
+
+            {/* AEO Voice & Generative Search FAQ Knowledge Section */}
+            <AEOAnswersSection
+                title="Parity Mustard Oil Knowledge & Answer Guide"
+                subtitle="Direct answers to frequently searched questions for voice assistants, AI search engines, and health-conscious families."
+            />
 
             {/* Short About Teaser */}
             <section className="py-24 bg-brand-light">

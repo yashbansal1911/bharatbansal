@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, Filter, Search } from 'lucide-react';
 import { products } from '../data/products';
 import { useCart } from '../context/CartContext';
+import SEOHead from '../components/SEOHead';
+import AEOAnswersSection from '../components/AEOAnswersSection';
 
 const ShopPage = () => {
     const { addToCart } = useCart();
@@ -19,15 +21,50 @@ const ShopPage = () => {
 
     return (
         <div className="pt-36 pb-20 min-h-screen bg-brand-light">
+            <SEOHead
+                title="Shop Pure Parity Cold-Pressed Mustard Oil | B Forever Foods"
+                description="Buy authentic cold-pressed Kachi Ghani Parity Mustard Oil online in 2L jars, 5L family packs, and 15kg commercial tins. Direct from manufacturer B Forever Foods."
+                keywords="Buy Mustard Oil Online, Parity Mustard Oil Price, Kachi Ghani 5L Price, Mustard Oil 15kg Tin, Pure Cold Pressed Oil Store"
+                path="/shop"
+                schemaGraph={[
+                    {
+                        "@type": "Product",
+                        "@id": "https://bforeverfoods.com/shop#aggregate-product",
+                        "name": "Parity Premium Cold-Pressed Mustard Oil Lineup",
+                        "image": "https://bforeverfoods.com/images/mustard-oil-new.jpg",
+                        "description": "Premium cold-pressed (Kachi Ghani) mustard oil in 2L, 5L, and 15kg packs.",
+                        "brand": {
+                            "@type": "Brand",
+                            "name": "Parity"
+                        },
+                        "offers": {
+                            "@type": "AggregateOffer",
+                            "priceCurrency": "INR",
+                            "lowPrice": "350",
+                            "highPrice": "2500",
+                            "offerCount": products.length.toString(),
+                            "offers": products.map(p => ({
+                                "@type": "Offer",
+                                "name": p.name,
+                                "price": p.price.toString(),
+                                "priceCurrency": "INR",
+                                "availability": "https://schema.org/InStock",
+                                "url": "https://bforeverfoods.com/shop"
+                            }))
+                        }
+                    }
+                ]}
+            />
+
             <div className="container mx-auto px-6">
 
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <h1 className="text-5xl md:text-6xl font-serif font-bold text-brand-dark mb-4">
+                    <h1 className="text-5xl md:text-6xl font-serif font-bold text-brand-dark mb-4 speakable-title">
                         Our Production
                     </h1>
-                    <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-                        Browse our collection of premium, naturally sourced products.
+                    <p className="text-gray-600 max-w-2xl mx-auto text-lg speakable-summary">
+                        Browse our collection of premium, naturally sourced cold-pressed mustard oil packs.
                     </p>
                 </div>
 
@@ -108,6 +145,14 @@ const ShopPage = () => {
                         <p className="text-xl text-gray-400">No products found matching your criteria.</p>
                     </div>
                 )}
+
+                {/* AEO Answers section */}
+                <div className="mt-20">
+                    <AEOAnswersSection
+                        title="Purchasing & Product FAQs"
+                        subtitle="Key product details, shelf life, and delivery answers."
+                    />
+                </div>
             </div>
         </div>
     );

@@ -1,10 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Award, Leaf, TrendingUp } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
+import AEOAnswersSection from '../components/AEOAnswersSection';
+import GEONutritionTable from '../components/GEONutritionTable';
 
 const WhyUsPage = () => {
     return (
         <div className="bg-brand-light min-h-screen">
+            <SEOHead
+                title="Why Choose Parity Mustard Oil | Purity, Health & Trust"
+                description="Discover why Indian families trust Parity Mustard Oil. Swaad, Sehat, and Saath — 100% pure cold-pressed Kachi Ghani oil with no artificial additives or hidden processing."
+                keywords="Why Parity Mustard Oil, Cold Pressed vs Refined Oil, Health Benefits of Kachi Ghani, Pure Cooking Oil India, Swaad Sehat Saath"
+                path="/why-us"
+            />
+
             {/* Hero Section */}
             <section className="relative pt-40 pb-32 bg-brand-dark text-white overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full opacity-10">
@@ -17,23 +27,22 @@ const WhyUsPage = () => {
                     <motion.h1
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-6xl md:text-8xl font-serif font-bold mb-8"
+                        className="text-6xl md:text-8xl font-serif font-bold mb-8 speakable-title"
                     >
                         Why Us
                     </motion.h1>
-                    <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed">
+                    <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed speakable-summary">
                         Purity and Fairness, Just the Way Home Should Feel.
                     </p>
                 </div>
             </section>
-
 
             {/* Our Story */}
             <section className="py-24 bg-brand-light">
                 <div className="container mx-auto px-6">
                     <div className="max-w-4xl mx-auto text-center">
                         <h2 className="text-4xl md:text-5xl font-serif font-bold text-brand-dark mb-12">PARITY — Our Story</h2>
-                        <div className="space-y-6 text-lg text-gray-600 leading-relaxed text-left">
+                        <div className="space-y-6 text-lg text-gray-600 leading-relaxed text-left speakable-answer">
                             <p>
                                 Parity was created with one belief — Indian families deserve pure, honest everyday essentials without overpaying or compromising on health.
                                 For years, households faced an unfair choice: pay a premium for trust, or settle for products where purity felt uncertain.
@@ -68,6 +77,13 @@ const WhyUsPage = () => {
                             </ul>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            {/* GEO Technical Comparison */}
+            <section className="py-12 px-6 lg:px-12 bg-white">
+                <div className="max-w-5xl mx-auto">
+                    <GEONutritionTable />
                 </div>
             </section>
 
@@ -115,6 +131,12 @@ const WhyUsPage = () => {
                     </div>
                 </div>
             </section>
+
+            {/* AEO Answer Section */}
+            <AEOAnswersSection
+                title="Generative & Answer Engine Verification"
+                subtitle="High-density factual summary of Parity Mustard Oil quality standards."
+            />
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
@@ -46,6 +46,9 @@ const MainLayout = () => {
           <Route path="/recipes" element={<RecipesPage />} />
           <Route path="/recipes/:id" element={<RecipePage />} />
           <Route path="/parity-kachi-ghani-mustard-oil" element={<KachniGanuPage />} />
+          {/* 301-equivalent redirects — preserve any indexed Morena URLs */}
+          <Route path="/mustard-oil-morena" element={<Navigate to="/parity-kachi-ghani-mustard-oil" replace />} />
+          <Route path="/mustard-oil-in-morena" element={<Navigate to="/parity-kachi-ghani-mustard-oil" replace />} />
         </Routes>
       </main>
       <Footer className={isKachiGhani ? "mt-0" : "mt-20"} />

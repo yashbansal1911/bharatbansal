@@ -6,6 +6,10 @@ import {
     Upload, ArrowRight, Check 
 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
+import { db, storage } from '../config/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import SEOHead from '../components/SEOHead';
 
 const ContactPage = () => {
     const generalFormRef = useRef();
@@ -124,70 +128,137 @@ const ContactPage = () => {
 
         setDistributorStatus('sending');
 
-        // Package email parameters for distributor leads
-        const templateParams = {
-            from_name: distributorData.fullName,
-            reply_to: distributorData.email,
-            to_name: 'Parity Distributor Team',
-            message: `
-                === NEW DISTRIBUTOR LEAD INQUIRY ===
-                
-                PERSONAL DETAILS:
-                - Full Name: ${distributorData.fullName}
-                - Mobile: ${distributorData.mobile}
-                - WhatsApp: ${distributorData.whatsApp}
-                - Email: ${distributorData.email}
-                
-                BUSINESS PROFILE:
-                - Company Name: ${distributorData.firmName}
-                - Business Type: ${distributorData.businessType}
-                - GST Number: ${distributorData.gstNumber}
-                - Experience: ${distributorData.experience}
-                
-                TERRITORY DETAILS:
-                - Location: ${distributorData.city}, ${distributorData.district}, ${distributorData.state} - ${distributorData.pinCode}
-                
-                INFRASTRUCTURE:
-                - Warehouse Available: ${distributorData.warehouseAvailable}
-                - Warehouse Size: ${distributorData.warehouseSize} sq ft
-                - Salespersons: ${distributorData.salespersons}
-                
-                MARKET REACH & OPERATIONS:
-                - Retail Outlets Served: ${distributorData.retailOutlets}
-                - Brands Distributed: ${distributorData.brandsDistributed || 'None'}
-                - Distribution Area Covered: ${distributorData.areaCovered || 'None'}
-                - Start Timeline: ${distributorData.startOperations}
-                
-                ATTACHMENTS LOADED:
-                - GST Certificate: ${distributorData.gstCertificate ? distributorData.gstCertificate.name : 'Not Uploaded'}
-                - Business Registration: ${distributorData.businessRegCertificate ? distributorData.businessRegCertificate.name : 'Not Uploaded'}
-                - Warehouse Photos: ${distributorData.warehousePhotos ? distributorData.warehousePhotos.name : 'Not Uploaded'}
-                - Visiting Card: ${distributorData.visitingCard ? distributorData.visitingCard.name : 'Not Uploaded'}
-            `
-        };
-
         try {
-            await emailjs.send(
-                import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_196fkgq',
-                import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s',
-                templateParams,
-                {
-                    publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy',
+            // ── STEP 1: Upload files to Firebase Storage ──────────────────────
+            const fileFields = [
+                'gstCertificate',
+                'businessRegCertificate',
+                'warehousePhotos',
+                'visitingCard',
+            ];
+
+            const fileURLs = {};
+            for (const field of fileFields) {
+                const file = distributorData[field];
+                if (file) {
+                    const timestamp = Date.now();
+                    const storageRef = ref(
+                        storage,
+                        `distributor_leads/${timestamp}_${field}_${file.name}`
+                    );
+                    const snapshot = await uploadBytes(storageRef, file);
+                    fileURLs[field] = await getDownloadURL(snapshot.ref);
+                } else {
+                    fileURLs[field] = null;
                 }
-            );
+            }
+
+            // ── STEP 2: Save lead to Firestore ────────────────────────────────
+            const leadData = {
+                submittedAt: serverTimestamp(),
+                status: 'new',
+                // Personal
+                fullName: distributorData.fullName,
+                mobile: distributorData.mobile,
+                whatsApp: distributorData.whatsApp,
+                email: distributorData.email,
+                // Business
+                firmName: distributorData.firmName,
+                businessType: distributorData.businessType,
+                gstNumber: distributorData.gstNumber,
+                experience: distributorData.experience,
+                // Location
+                state: distributorData.state,
+                district: distributorData.district,
+                city: distributorData.city,
+                pinCode: distributorData.pinCode,
+                // Infrastructure
+                warehouseAvailable: distributorData.warehouseAvailable,
+                warehouseSize: distributorData.warehouseSize,
+                salespersons: distributorData.salespersons,
+                // Market reach
+                retailOutlets: distributorData.retailOutlets,
+                brandsDistributed: distributorData.brandsDistributed || '',
+                areaCovered: distributorData.areaCovered || '',
+                startOperations: distributorData.startOperations,
+                // Uploaded file URLs
+                files: fileURLs,
+            };
+
+            const docRef = await addDoc(collection(db, 'distributor_leads'), leadData);
+
+            // ── STEP 3: Send EmailJS notification (fire-and-forget) ───────────
+            // Even if this fails, the lead is already safe in Firestore.
+            const buildFileLink = (url, label) =>
+                url ? `${label}: ${url}` : `${label}: Not Uploaded`;
+
+            const templateParams = {
+                from_name: distributorData.fullName,
+                reply_to: distributorData.email,
+                to_name: 'Parity Distributor Team',
+                message: `
+=== NEW DISTRIBUTOR LEAD — Firestore ID: ${docRef.id} ===
+
+PERSONAL DETAILS:
+- Full Name   : ${distributorData.fullName}
+- Mobile      : ${distributorData.mobile}
+- WhatsApp    : ${distributorData.whatsApp}
+- Email       : ${distributorData.email}
+
+BUSINESS PROFILE:
+- Company Name: ${distributorData.firmName}
+- Business Type: ${distributorData.businessType}
+- GST Number  : ${distributorData.gstNumber}
+- Experience  : ${distributorData.experience}
+
+TERRITORY:
+- Location    : ${distributorData.city}, ${distributorData.district}, ${distributorData.state} — ${distributorData.pinCode}
+
+INFRASTRUCTURE:
+- Warehouse   : ${distributorData.warehouseAvailable} (${distributorData.warehouseSize} sq ft)
+- Salespersons: ${distributorData.salespersons}
+
+MARKET REACH & OPERATIONS:
+- Retail Outlets : ${distributorData.retailOutlets}
+- Brands         : ${distributorData.brandsDistributed || 'None'}
+- Area Covered   : ${distributorData.areaCovered || 'None'}
+- Start Timeline : ${distributorData.startOperations}
+
+DOCUMENTS (click to open):
+${buildFileLink(fileURLs.gstCertificate, 'GST Certificate')}
+${buildFileLink(fileURLs.businessRegCertificate, 'Business Registration')}
+${buildFileLink(fileURLs.warehousePhotos, 'Warehouse Photos')}
+${buildFileLink(fileURLs.visitingCard, 'Visiting Card')}
+                `.trim(),
+            };
+
+            // Non-blocking — don't await, don't fail user if email fails
+            emailjs
+                .send(
+                    import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_196fkgq',
+                    import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s',
+                    templateParams,
+                    { publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy' }
+                )
+                .catch((err) =>
+                    console.warn('EmailJS notification failed (lead saved in Firestore):', err)
+                );
+
+            // ── STEP 4: Show success & reset form ────────────────────────────
             setDistributorStatus('success');
-            // Reset form
             setDistributorData({
                 fullName: '', mobile: '', whatsApp: '', email: '', firmName: '',
                 businessType: 'Distributor', gstNumber: '', experience: 'Less than 1 year',
                 state: '', district: '', city: '', pinCode: '', warehouseAvailable: 'Yes',
-                warehouseSize: 'Below 500', salespersons: 'None', retailOutlets: 'Below 50', brandsDistributed: '',
-                areaCovered: '', startOperations: 'Immediately',
-                gstCertificate: null, businessRegCertificate: null, warehousePhotos: null, visitingCard: null,
-                declared: false
+                warehouseSize: 'Below 500', salespersons: 'None', retailOutlets: 'Below 50',
+                brandsDistributed: '', areaCovered: '', startOperations: 'Immediately',
+                gstCertificate: null, businessRegCertificate: null,
+                warehousePhotos: null, visitingCard: null,
+                declared: false,
             });
+
         } catch (error) {
-            console.error('Failed to send distributor lead:', error);
+            console.error('Failed to save distributor lead:', error);
             setDistributorStatus('error');
         }
     };
@@ -218,6 +289,13 @@ const ContactPage = () => {
 
     return (
         <div className="bg-[#FDFBF7] min-h-screen pt-32 pb-2">
+            <SEOHead
+                title="Contact & Partner With Parity Mustard Oil | B Forever Foods"
+                description="Get in touch with B Forever Foods Pvt Ltd for customer inquiries, bulk orders, wholesale distributorship, and dealership opportunities for Parity Mustard Oil."
+                keywords="Contact B Forever Foods, Parity Mustard Oil Distributorship, Wholesale Mustard Oil Dealer, B Forever Foods Phone Number, Kachi Ghani Dealership"
+                path="/contact"
+                faqs={faqs.map(f => ({ question: f.q, answer: f.a }))}
+            />
             <div className="container mx-auto px-6 lg:px-12">
                 
                 {/* Header Switcher */}
