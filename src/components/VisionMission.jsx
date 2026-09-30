@@ -8,10 +8,10 @@ const cards = [
         eyebrow: 'Our Vision',
         icon: Eye,
         headline: 'Purity is a Right,\nNot a Privilege.',
-        body: 'To create a future where purity is a right, not a privilege.',
-        accent: '#D19E31',
-        bg: 'from-[#2A3013] to-[#4B5930]',
-        glow: 'rgba(209,158,49,0.25)',
+        body: 'A future where purity is a right, not a privilege.',
+        accent: '#4B5930',
+        bg: 'from-[#C5920A] to-[#D19E31]',
+        glow: 'rgba(75,89,48,0.30)',
         delay: 0,
     },
     {
@@ -19,10 +19,10 @@ const cards = [
         eyebrow: 'Our Mission',
         icon: Target,
         headline: 'Crafted Pure.\nPriced Fair.',
-        body: 'To craft everyday essentials with uncompromising purity, fair value, and complete transparency — sourcing responsibly, testing rigorously, and putting consumer well-being at the heart of every decision.',
-        accent: '#4B5930',
-        bg: 'from-[#C5920A] to-[#D19E31]',
-        glow: 'rgba(75,89,48,0.30)',
+        body: 'To build a food brand that people can trust by being transparent about our products, maintaining high standards of quality, and consistently putting the needs of our consumers first.',
+        accent: '#D19E31',
+        bg: 'from-[#2A3013] to-[#4B5930]',
+        glow: 'rgba(209,158,49,0.25)',
         delay: 0.15,
     },
 ];
@@ -31,7 +31,7 @@ const stats = [
     { value: '25+', label: 'Years of Legacy' },
     { value: '100%', label: 'Kachi Ghani Process' },
     { value: '0', label: 'Preservatives Added' },
-    { value: '3×', label: 'Filtered for Purity' },
+    { value: '2×', label: 'Filtered for Purity' },
 ];
 
 const VisionMission = () => {
@@ -133,10 +133,10 @@ const VisionMission = () => {
                                 style={{ background: 'rgba(255,255,255,0.3)' }}
                             />
 
-                            {/* Body — Times New Roman, bold, left-aligned */}
+                            {/* Body — Elegant Playfair Display Serif (Bold) */}
                             <p
-                                className="text-white font-bold text-xl md:text-2xl leading-relaxed text-left"
-                                style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                                className="text-white font-bold text-lg md:text-xl leading-relaxed text-left"
+                                style={{ fontFamily: '"Playfair Display", Georgia, serif' }}
                             >
                                 {body}
                             </p>

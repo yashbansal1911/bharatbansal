@@ -113,7 +113,7 @@ const ProductShowcase = () => {
                                                 <img
                                                     src={product.image}
                                                     alt={product.name}
-                                                    className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-105 mix-blend-multiply"
+                                                    className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-105 drop-shadow-[0_10px_20px_rgba(0,0,0,0.12)]"
                                                 />
                                             </div>
 

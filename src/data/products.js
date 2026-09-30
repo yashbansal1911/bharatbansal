@@ -1,5 +1,16 @@
 export const products = [
     {
+        id: 3,
+        name: "Parity Mustard Oil – 1L Pouch",
+        category: "Oils",
+        image: "/images/parity-mustard-oil-1l-pouch.png",
+        price: 175,
+        currency: "₹",
+        size: "1 Litre Pouch",
+        desc: "Everyday essential 1L pouch of cold-pressed kachi ghani mustard oil.",
+        details: "Pure cold-pressed kachi ghani mustard oil packed in a convenient 1 Litre pouch. Preserves natural aroma, pungency, and essential nutrients for wholesome Indian cooking."
+    },
+    {
         id: 1,
         name: "Parity Mustard Oil – 2L",
         category: "Oils",

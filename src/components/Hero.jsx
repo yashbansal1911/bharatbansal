@@ -56,7 +56,8 @@ const Hero = () => {
                     </h1>
 
                     <p className="text-xl md:text-2xl text-gray-200 lg:mx-0 max-w-2xl mb-12 font-light leading-relaxed">
-                        Cold-pressed kachi ghani mustard oil — straight from the fields to your kitchen. Pure, bold, and unadulterated.
+                        Good food starts with what you put in it.<br />
+                        Kachi Ghani mustard oil, made with care for the food you make every day.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6">

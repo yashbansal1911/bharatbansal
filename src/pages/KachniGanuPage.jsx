@@ -282,11 +282,11 @@ const KachniGanuPage = () => {
                                         )}
 
                                         {/* Product image */}
-                                        <div className="flex-shrink-0 w-24 h-28 flex items-center justify-center bg-gray-50 rounded-xl overflow-hidden">
+                                        <div className="flex-shrink-0 w-28 h-32 flex items-center justify-center bg-gray-50 rounded-xl overflow-hidden p-1">
                                             <img
                                                 src={product.image}
                                                 alt={product.name}
-                                                className="h-full w-full object-contain mix-blend-multiply p-2"
+                                                className="h-full w-full object-contain drop-shadow-md"
                                             />
                                         </div>
 

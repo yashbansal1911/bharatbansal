@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, ShieldCheck, Droplet, Sun } from 'lucide-react';
+import { Heart, ShieldCheck, Wind, Sun } from 'lucide-react';
 
 const benefits = [
     {
@@ -14,9 +14,9 @@ const benefits = [
         desc: "100% natural extraction process ensures no chemicals or additives."
     },
     {
-        icon: Droplet,
-        title: "Cold Pressed",
-        desc: "Extracted at low temperatures to retain natural antioxidants and flavor."
+        icon: Wind,
+        title: "Rich Aroma",
+        desc: "A bold, sharp aroma that reflects authentic mustard oil."
     },
     {
         icon: Sun,
