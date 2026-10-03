@@ -27,18 +27,9 @@ const HomePage = () => {
             <ProductShowcase />
             <Recipes />
 
-            {/* GEO Technical Comparison & Nutrition Matrix */}
-            <section className="py-16 bg-white">
-                <div className="container mx-auto px-6 lg:px-12">
-                    <GEONutritionTable />
-                </div>
-            </section>
-
-            {/* AEO Voice & Generative Search FAQ Knowledge Section */}
-            <AEOAnswersSection
-                title="Parity Mustard Oil Knowledge & Answer Guide"
-                subtitle="Direct answers to frequently searched questions for voice assistants, AI search engines, and health-conscious families."
-            />
+            {/* Hidden GEO & AEO Verification Components for Search Engines & AI Crawlers */}
+            <GEONutritionTable />
+            <AEOAnswersSection />
 
             {/* Short About Teaser */}
             <section className="py-24 bg-brand-light">

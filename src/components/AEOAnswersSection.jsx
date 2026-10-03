@@ -48,23 +48,19 @@ export const defaultAEOQuestions = [
 ];
 
 export default function AEOAnswersSection({
-  title = "Answer Engine Knowledge Base & FAQs",
-  subtitle = "Direct, verified facts about Parity Cold-Pressed Mustard Oil for smart assistants, search engines, and conscious cooks.",
+  title = "Parity Mustard Oil Knowledge & FAQ Guide",
+  subtitle = "Direct, verified facts about Parity Cold-Pressed Mustard Oil.",
   questions = defaultAEOQuestions,
   className = ""
 }) {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <section className={`py-16 px-6 lg:px-12 bg-amber-50/40 border-y border-amber-100 ${className}`}>
+    <section className={`sr-only ${className}`}>
       <div className="max-w-5xl mx-auto">
         
-        {/* GEO & AEO Section Header */}
+        {/* Section Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-gold/10 text-brand-dark text-xs font-bold uppercase tracking-wider mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-brand-gold" />
-            <span>Generative & Answer Engine Verified Knowledge</span>
-          </div>
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-gray-900 speakable-title">
             {title}
           </h2>

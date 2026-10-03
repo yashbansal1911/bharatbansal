@@ -104,10 +104,7 @@ const AboutPage = () => {
             </section>
 
             {/* AEO Answers Section */}
-            <AEOAnswersSection
-                title="Company & Brand FAQ Reference"
-                subtitle="Factual company information for answer engines, AI agents, and partners."
-            />
+            <AEOAnswersSection />
         </div>
     );
 };

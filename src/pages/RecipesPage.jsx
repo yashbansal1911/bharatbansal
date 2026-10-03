@@ -216,12 +216,7 @@ const RecipesPage = () => {
                 </AnimatePresence>
 
                 {/* AEO Culinary FAQs */}
-                <div className="mt-20">
-                    <AEOAnswersSection
-                        title="Mustard Oil Cooking Techniques & Answers"
-                        subtitle="Key culinary tips for cooking with cold-pressed Kachi Ghani mustard oil."
-                    />
-                </div>
+                <AEOAnswersSection />
             </div>
         </div>
     );

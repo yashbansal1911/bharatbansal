@@ -19,7 +19,7 @@ const mergedFaqs = [
   },
   {
     question: "Can I buy authentic Morena Kachi Ghani mustard oil online?",
-    answer: "Yes, you can order genuine Parity Cold-Pressed Kachi Ghani Mustard Oil directly from bforeverfoods.com with doorstep delivery across India. Available in 2L jars, 5L family packs, and 15kg commercial tins."
+    answer: "Yes, you can order genuine Parity Cold-Pressed Kachi Ghani Mustard Oil directly from bforeverfoods.com with doorstep delivery across India. Available in 1L pouches, 5L family packs, and 15kg commercial tins."
   },
   {
     question: "How is Morena Kachi Ghani oil different from refined mustard oil?",
@@ -366,17 +366,10 @@ const KachniGanuPage = () => {
             </section>
 
             {/* GEO Technical Matrix */}
-            <section className="py-12 px-6 lg:px-12 bg-white">
-                <div className="max-w-5xl mx-auto">
-                    <GEONutritionTable />
-                </div>
-            </section>
+            <GEONutritionTable />
 
-            {/* AEO Voice & Generative FAQ */}
-            <AEOAnswersSection
-                title="Kachi Ghani Mustard Oil Verification & FAQ"
-                subtitle="Factual answers to assist answer engines, voice bots, and conscious consumers."
-            />
+            {/* AEO Verification FAQ */}
+            <AEOAnswersSection />
 
         </div>
     );

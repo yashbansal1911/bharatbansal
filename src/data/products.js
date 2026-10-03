@@ -11,17 +11,6 @@ export const products = [
         details: "Pure cold-pressed kachi ghani mustard oil packed in a convenient 1 Litre pouch. Preserves natural aroma, pungency, and essential nutrients for wholesome Indian cooking."
     },
     {
-        id: 1,
-        name: "Parity Mustard Oil – 2L",
-        category: "Oils",
-        image: "/images/parity-mustard-oil-bottle.png",
-        price: 350,
-        currency: "₹",
-        size: "2 Litres",
-        desc: "Cold-pressed kachi ghani mustard oil for authentic flavor. Rich in aroma and pungency, perfect for Indian cooking.",
-        details: "Our Parity Mustard Oil is extracted from the finest mustard seeds using the traditional cold-pressed (kachi ghani) method. This ensures that the natural antioxidants, essential oils, and bold flavor are fully retained. No additives, no blending — just pure mustard oil as nature intended."
-    },
-    {
         id: 2,
         name: "Parity Mustard Oil – 5L",
         category: "Oils",

@@ -23,7 +23,7 @@ const ShopPage = () => {
         <div className="pt-36 pb-20 min-h-screen bg-brand-light">
             <SEOHead
                 title="Shop Pure Parity Cold-Pressed Mustard Oil | B Forever Foods"
-                description="Buy authentic cold-pressed Kachi Ghani Parity Mustard Oil online in 2L jars, 5L family packs, and 15kg commercial tins. Direct from manufacturer B Forever Foods."
+                description="Buy authentic cold-pressed Kachi Ghani Parity Mustard Oil online in 1L pouches, 5L family packs, and 15kg commercial tins. Direct from manufacturer B Forever Foods."
                 keywords="Buy Mustard Oil Online, Parity Mustard Oil Price, Kachi Ghani 5L Price, Mustard Oil 15kg Tin, Pure Cold Pressed Oil Store"
                 path="/shop"
                 schemaGraph={[
@@ -32,7 +32,7 @@ const ShopPage = () => {
                         "@id": "https://bforeverfoods.com/shop#aggregate-product",
                         "name": "Parity Premium Cold-Pressed Mustard Oil Lineup",
                         "image": "https://bforeverfoods.com/images/mustard-oil-new.jpg",
-                        "description": "Premium cold-pressed (Kachi Ghani) mustard oil in 2L, 5L, and 15kg packs.",
+                        "description": "Premium cold-pressed (Kachi Ghani) mustard oil in 1L, 5L, and 15kg packs.",
                         "brand": {
                             "@type": "Brand",
                             "name": "Parity"
@@ -147,12 +147,7 @@ const ShopPage = () => {
                 )}
 
                 {/* AEO Answers section */}
-                <div className="mt-20">
-                    <AEOAnswersSection
-                        title="Purchasing & Product FAQs"
-                        subtitle="Key product details, shelf life, and delivery answers."
-                    />
-                </div>
+                <AEOAnswersSection />
             </div>
         </div>
     );

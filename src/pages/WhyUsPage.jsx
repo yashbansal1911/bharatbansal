@@ -133,10 +133,7 @@ const WhyUsPage = () => {
             </section>
 
             {/* AEO Answer Section */}
-            <AEOAnswersSection
-                title="Generative & Answer Engine Verification"
-                subtitle="High-density factual summary of Parity Mustard Oil quality standards."
-            />
+            <AEOAnswersSection />
         </div>
     );
 };
