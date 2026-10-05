@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "cors": "^2.8.5",
     "country-state-city": "^3.2.1",
+
     "dotenv": "^16.4.7",
     "express": "^4.19.2",
     "firebase": "^12.7.0",

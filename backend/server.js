@@ -476,7 +476,8 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://yashbansal1911_db:yashbansal@cluster0.sayqyyh.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI;
+
 
 if (MONGODB_URI) {
   mongoose
