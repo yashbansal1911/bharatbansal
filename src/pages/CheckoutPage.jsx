@@ -12,7 +12,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001
 const OTP_LENGTH = 4;
 
 const CheckoutPage = () => {
-    const { cart, getCartTotal, updateQuantity, removeFromCart } = useCart();
+    const { cart, getCartTotal, updateQuantity, removeFromCart, clearCart } = useCart();
     const navigate = useNavigate();
     const [step, setStep] = useState(1); // 1: Login, 2: Address, 3: Payment, 4: Success
 
@@ -283,6 +283,7 @@ const CheckoutPage = () => {
     const [isVerifyingUpi, setIsVerifyingUpi] = useState(false);
     const [cardFlipped, setCardFlipped] = useState(false);
     const [paymentStage, setPaymentStage] = useState('');
+    const [placedOrderId, setPlacedOrderId] = useState('');
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -335,45 +336,164 @@ const CheckoutPage = () => {
         window.scrollTo(0, 0);
     };
 
-    const handlePaymentSubmit = (e) => {
+    // ─── Razorpay SDK Loader ────────────────────────────────────────────────────
+    const loadRazorpay = () =>
+        new Promise((resolve) => {
+            if (window.Razorpay) return resolve(true);
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+
+    // ─── Assemble Order Payload ─────────────────────────────────────────────────
+    const buildOrderPayload = () => ({
+        customer: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+        },
+        shippingAddress: {
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip,
+        },
+        items: cart.map((item) => ({
+            id: item.id,
+            name: item.name,
+            packaging: item.packaging || item.size || '',
+            quantity: item.quantity,
+            price: item.price,
+        })),
+        subtotal: getCartTotal(),
+        deliveryFee: 0,
+        discount: 0,
+        totalAmount: getCartTotal(),
+    });
+
+    // ─── Real Payment Handler ────────────────────────────────────────────────────
+    const handlePaymentSubmit = async (e) => {
         if (e) e.preventDefault();
         setError('');
-        
-        if (paymentMethod === 'card') {
-            if (!formData.cardNumber || formData.cardNumber.length < 19) {
-                setError('Please enter a valid 16-digit card number.');
-                return;
+
+        // ── COD Path ────────────────────────────────────────────────────────────
+        if (paymentMethod === 'cod') {
+            setIsProcessingPayment(true);
+            setPaymentStage('Placing your order...');
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/orders/cod`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderData: buildOrderPayload() }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.message || 'Failed to place order.');
+                setPlacedOrderId(data.orderId);
+                clearCart();
+                setStep(4);
+                window.scrollTo(0, 0);
+            } catch (err) {
+                setError(err.message || 'Failed to place order. Please try again.');
+            } finally {
+                setIsProcessingPayment(false);
+                setPaymentStage('');
             }
-            if (!formData.expiryDate || formData.expiryDate.length < 5) {
-                setError('Please enter a valid card expiry date (MM/YY).');
-                return;
-            }
-            if (!formData.cvv || formData.cvv.length < 3) {
-                setError('Please enter a valid 3-digit CVV.');
-                return;
-            }
-        } else if (paymentMethod === 'upi') {
-            if (!formData.upiId || !formData.upiId.includes('@')) {
-                setError('Please enter your UPI ID or verify scan.');
-                return;
-            }
+            return;
+        }
+
+        // ── Razorpay Path (UPI / Card / Netbanking) ─────────────────────────────
+        const sdkLoaded = await loadRazorpay();
+        if (!sdkLoaded) {
+            setError('Payment gateway could not be loaded. Check your internet connection.');
+            return;
         }
 
         setIsProcessingPayment(true);
-        
-        // Multi-stage secure simulated processor
-        setPaymentStage('Securing connection...');
-        setTimeout(() => {
-            setPaymentStage('Verifying payment token...');
-            setTimeout(() => {
-                setPaymentStage('Authenticating order...');
-                setTimeout(() => {
-                    setIsProcessingPayment(false);
-                    setStep(4);
-                    window.scrollTo(0, 0);
-                }, 1000);
-            }, 1000);
-        }, 1000);
+        setPaymentStage('Creating secure payment session...');
+
+        try {
+            // Step 1: Create Razorpay order on backend
+            const orderRes = await fetch(`${API_BASE_URL}/api/orders/create-razorpay-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: getCartTotal(),
+                    currency: 'INR',
+                }),
+            });
+            const orderJson = await orderRes.json();
+            if (!orderRes.ok) throw new Error(orderJson?.message || 'Could not create payment session.');
+
+            setPaymentStage('Opening payment window...');
+            setIsProcessingPayment(false);
+
+            // Step 2: Open Razorpay modal
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: orderJson.amount,
+                currency: orderJson.currency,
+                name: 'B Forever Foods',
+                description: 'Parity Kachi Ghani Mustard Oil',
+                image: 'https://parity-foods-final.vercel.app/logo.png',
+                order_id: orderJson.id,
+                prefill: {
+                    name: `${formData.firstName} ${formData.lastName}`.trim(),
+                    email: formData.email,
+                    contact: formData.phone,
+                },
+                theme: { color: '#4B5930' },
+                handler: async (response) => {
+                    // Step 3: Verify signature & save order on backend
+                    setIsProcessingPayment(true);
+                    setPaymentStage('Verifying your payment...');
+                    try {
+                        const verifyRes = await fetch(`${API_BASE_URL}/api/orders/verify-payment`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                orderData: buildOrderPayload(),
+                            }),
+                        });
+                        const verifyJson = await verifyRes.json();
+                        if (!verifyRes.ok) throw new Error(verifyJson?.message || 'Payment verification failed.');
+                        setPlacedOrderId(verifyJson.orderId);
+                        clearCart();
+                        setStep(4);
+                        window.scrollTo(0, 0);
+                    } catch (err) {
+                        setError(err.message || 'Payment verification failed. Please contact support.');
+                    } finally {
+                        setIsProcessingPayment(false);
+                        setPaymentStage('');
+                    }
+                },
+                modal: {
+                    ondismiss: () => {
+                        setIsProcessingPayment(false);
+                        setPaymentStage('');
+                        setError('Payment cancelled. You can try again.');
+                    },
+                },
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', (response) => {
+                setIsProcessingPayment(false);
+                setPaymentStage('');
+                setError(`Payment failed: ${response.error.description || 'Unknown error. Please try again.'}`);
+            });
+            rzp.open();
+        } catch (err) {
+            setError(err.message || 'Payment failed. Please try again.');
+            setIsProcessingPayment(false);
+            setPaymentStage('');
+        }
     };
 
     if (cart.length === 0 && step !== 4) {
@@ -1290,8 +1410,13 @@ const CheckoutPage = () => {
                                     <CheckCircle size={48} />
                                 </div>
                                 <h2 className="text-3xl font-serif font-bold text-brand-dark mb-4">Order Placed Successfully!</h2>
+                                {placedOrderId && (
+                                    <p className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-3">
+                                        Order ID: {placedOrderId}
+                                    </p>
+                                )}
                                 <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                                    Thank you for your purchase, {formData.firstName}. We have sent a confirmation email to {formData.email}.
+                                    Thank you for your purchase, {formData.firstName}. We have sent a confirmation email to <span className="font-bold text-brand-dark">{formData.email}</span>.
                                 </p>
                                 <Link to="/" className="inline-block bg-brand-dark text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-gold transition-colors">
                                     Back to Home
