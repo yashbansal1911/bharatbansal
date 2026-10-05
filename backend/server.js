@@ -476,17 +476,26 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
-mongoose
-  .connect(process.env.MONGODB_URI, { dbName: process.env.MONGODB_DB || 'parity-foods' })
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((error) => {
-    console.warn('MongoDB connection warning (continuing server startup):', error.message);
-  });
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://yashbansal1911_db:yashbansal@cluster0.sayqyyh.mongodb.net/';
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+if (MONGODB_URI) {
+  mongoose
+    .connect(MONGODB_URI, { dbName: process.env.MONGODB_DB || 'parity-foods' })
+    .then(() => {
+      console.log('Connected to MongoDB');
+    })
+    .catch((error) => {
+      console.warn('MongoDB connection warning (continuing server startup):', error.message);
+    });
+}
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+}
+
+export default app;
+
 
 
