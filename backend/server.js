@@ -33,19 +33,16 @@ const allowedOrigins = [...new Set([...envOrigins, 'http://localhost:5173', 'htt
 const allowAllOrigins = allowedOrigins.includes('*');
 
 app.use(cors({
-  origin(origin, callback) {
-    if (!origin) return callback(null, true);
-    const normalizedOrigin = origin.replace(/\/$/, '');
-    if (allowAllOrigins || allowedOrigins.includes(normalizedOrigin)) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS Blocked for origin: ${origin}`);
-      callback(null, false);
-    }
-  },
+  origin: true,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 }));
+
+app.options('*', cors());
+
 app.use(express.json());
+
 
 const requiredEnv = ['MONGODB_URI', 'EMAIL_SENDER_ADDRESS', 'RESEND_API_KEY'];
 requiredEnv.forEach((key) => {
