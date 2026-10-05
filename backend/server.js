@@ -6,11 +6,16 @@ import { Resend } from 'resend';
 import crypto from 'crypto';
 import dns from 'dns';
 import Razorpay from 'razorpay';
+import Otp from './models/Otp.js';
+import Order from './models/Order.js';
+
+dotenv.config();
 
 // Fix macOS Node link-local DNS resolution bugs with MongoDB Atlas SRV records
 if (process.platform === 'darwin') {
   dns.setServers(['8.8.8.8', '1.1.1.1']);
 }
+
 // Disable Mongoose command buffering so queries fail fast if DB is disconnected/offline
 mongoose.set('bufferCommands', false);
 
@@ -18,20 +23,13 @@ mongoose.set('bufferCommands', false);
 const inMemoryOtps = new Map();
 const inMemoryOrders = new Map();
 
-import Otp from './models/Otp.js';
-import Order from './models/Order.js';
-
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 10);
-const envOrigins = process.env.CLIENT_ORIGIN
-  ? process.env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim())
-  : [];
-const allowedOrigins = [...new Set([...envOrigins, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'https://www.bforeverfoods.com', 'https://bforeverfoods.com', 'https://parity-foods-final.vercel.app'])];
-const allowAllOrigins = allowedOrigins.includes('*');
 
+// ─── CORS ─────────────────────────────────────────────────────────────────────
+// Use origin:true which reflects the requesting origin back — works for any
+// domain (bforeverfoods.com, Vercel preview URLs, localhost) without a whitelist.
 app.use(cors({
   origin: true,
   credentials: true,
@@ -39,10 +37,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 }));
 
-app.options('*', cors());
+// Handle all OPTIONS preflight requests globally
+app.options('*', cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+}));
 
 app.use(express.json());
-
 
 const requiredEnv = ['MONGODB_URI', 'EMAIL_SENDER_ADDRESS', 'RESEND_API_KEY'];
 requiredEnv.forEach((key) => {
@@ -52,6 +55,7 @@ requiredEnv.forEach((key) => {
 });
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_startup');
+
 
 const ensureEmailConfig = () => {
   if (!process.env.EMAIL_SENDER_ADDRESS || !process.env.RESEND_API_KEY) {
