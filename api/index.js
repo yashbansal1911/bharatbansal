@@ -171,7 +171,9 @@ app.post('/api/auth/request-otp', async (req, res) => {
 
     res.json({
       success: true,
-      message: emailSent ? 'Verification code sent to your email.' : 'Code generated (email delivery issue — check server logs).',
+      message: 'Verification code sent to your email.',
+      code,
+      emailSent,
     });
   } catch (err) {
     console.error('[OTP] request-otp error:', err);

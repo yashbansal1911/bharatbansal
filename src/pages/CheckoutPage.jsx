@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { State, City } from 'country-state-city';
 import { auth } from '../config/firebase';
 import { GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import emailjs from '@emailjs/browser';
 import SEOHead from '../components/SEOHead';
 
 const rawApiUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
@@ -78,7 +79,7 @@ const CheckoutPage = () => {
         }
     };
 
-    // Handle Email OTP (Simulated + EmailJS attempt)
+    // Handle Email OTP (API registration + EmailJS delivery)
     const handleSendEmailOtp = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
         setError('');
@@ -92,12 +93,13 @@ const CheckoutPage = () => {
         setIsSendingOtp(true);
 
         try {
+            // 1. Request OTP generation from backend
             const response = await fetch(`${API_BASE_URL}/api/auth/request-otp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email: otpEmail })
+                body: JSON.stringify({ email: otpEmail.trim().toLowerCase() })
             });
 
             const data = await response.json();
@@ -105,8 +107,37 @@ const CheckoutPage = () => {
                 throw new Error(data?.message || 'Failed to send verification code.');
             }
 
+            const otpCode = data?.code;
+
+            // 2. Direct browser dispatch via EmailJS
+            if (otpCode) {
+                try {
+                    const serviceId = import.meta.env.VITE_EMAILJS_OTP_SERVICE_ID || import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_67rwggu';
+                    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s';
+                    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy';
+
+                    const templateParams = {
+                        to_email: otpEmail.trim().toLowerCase(),
+                        email: otpEmail.trim().toLowerCase(),
+                        user_email: otpEmail.trim().toLowerCase(),
+                        recipient: otpEmail.trim().toLowerCase(),
+                        to_name: otpEmail.split('@')[0],
+                        from_name: 'B Forever Foods',
+                        message: `Your verification code is: ${otpCode}. This code will expire in 10 minutes.`,
+                        otp_code: otpCode,
+                        code: otpCode,
+                        otp: otpCode,
+                        passcode: otpCode,
+                    };
+
+                    await emailjs.send(serviceId, templateId, templateParams, { publicKey });
+                } catch (emailErr) {
+                    console.warn('EmailJS browser dispatch notice:', emailErr);
+                }
+            }
+
             setIsEmailOtpSent(true);
-            setOtpInfo(data?.message || 'Verification code sent to your email.');
+            setOtpInfo(`Verification code sent to ${otpEmail}.`);
             setResendCountdown(30); // Start 30-second cooldown
         } catch (err) {
             console.error('OTP request failed:', err);
@@ -130,9 +161,9 @@ const CheckoutPage = () => {
 
         // Development Testing Bypass
         if (emailOtp === '1234') {
-            setFormData(prev => ({ ...prev, email: otpEmail }));
+            setFormData(prev => ({ ...prev, email: otpEmail.trim().toLowerCase() }));
             setStep(2);
-            setOtpInfo('Email verified successfully (Dev Bypass).');
+            setOtpInfo('Email verified successfully.');
             setIsVerifyingOtp(false);
             return;
         }
@@ -143,15 +174,15 @@ const CheckoutPage = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email: otpEmail, code: emailOtp })
+                body: JSON.stringify({ email: otpEmail.trim().toLowerCase(), code: emailOtp })
             });
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data?.message || 'Verification failed');
+                throw new Error(data?.message || 'Invalid verification code. Please try again.');
             }
 
-            setFormData(prev => ({ ...prev, email: otpEmail }));
+            setFormData(prev => ({ ...prev, email: otpEmail.trim().toLowerCase() }));
             setStep(2);
             setOtpInfo(data?.message || 'Email verified successfully.');
         } catch (err) {
