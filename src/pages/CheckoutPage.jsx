@@ -112,17 +112,21 @@ const CheckoutPage = () => {
             // 2. Direct browser dispatch via EmailJS
             if (otpCode) {
                 try {
-                    const serviceId = import.meta.env.VITE_EMAILJS_OTP_SERVICE_ID || import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_67rwggu';
+                    const serviceId = (import.meta.env.VITE_EMAILJS_OTP_SERVICE_ID && import.meta.env.VITE_EMAILJS_OTP_SERVICE_ID !== 'service_67rwggu')
+                        ? import.meta.env.VITE_EMAILJS_OTP_SERVICE_ID
+                        : (import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_196fkgq');
                     const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s';
                     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy';
 
                     const templateParams = {
-                        to_email: otpEmail.trim().toLowerCase(),
+                        name: otpEmail.split('@')[0],
+                        from_name: 'B Forever Foods',
+                        to_name: otpEmail.split('@')[0],
+                        reply_to: otpEmail.trim().toLowerCase(),
                         email: otpEmail.trim().toLowerCase(),
+                        to_email: otpEmail.trim().toLowerCase(),
                         user_email: otpEmail.trim().toLowerCase(),
                         recipient: otpEmail.trim().toLowerCase(),
-                        to_name: otpEmail.split('@')[0],
-                        from_name: 'B Forever Foods',
                         message: `Your verification code is: ${otpCode}. This code will expire in 10 minutes.`,
                         otp_code: otpCode,
                         code: otpCode,
