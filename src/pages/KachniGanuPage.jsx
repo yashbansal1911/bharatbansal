@@ -175,7 +175,7 @@ const KachniGanuPage = () => {
                             initial={{ opacity: 0, y: 14 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.3 }}
-                            className="flex flex-wrap gap-3"
+                            className="flex flex-wrap gap-3 mb-8 lg:mb-0"
                         >
                             {marks.map(({ icon: Icon, label }) => (
                                 <div
@@ -186,6 +186,20 @@ const KachniGanuPage = () => {
                                     {label}
                                 </div>
                             ))}
+                        </motion.div>
+
+                        {/* Mobile Bottle Image */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1, delay: 0.4 }}
+                            className="flex lg:hidden justify-center items-center mt-6"
+                        >
+                            <img
+                                src="/images/parity-mustard-oil-bottle.png"
+                                alt="Parity Mustard Oil – 5L"
+                                className="max-h-[280px] w-auto object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)]"
+                            />
                         </motion.div>
                     </div>
                 </div>

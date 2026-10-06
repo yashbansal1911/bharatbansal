@@ -8,7 +8,9 @@ import { auth } from '../config/firebase';
 import { GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import SEOHead from '../components/SEOHead';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const rawApiUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const API_BASE_URL = !isLocalhost && (rawApiUrl.includes('localhost') || rawApiUrl.includes('onrender.com')) ? '' : rawApiUrl;
 const OTP_LENGTH = 4;
 
 
@@ -1456,7 +1458,7 @@ const CheckoutPage = () => {
                                                     className="flex gap-4 p-4 rounded-2xl bg-gray-50 border border-transparent hover:border-brand-gold/20 transition-all group"
                                                 >
                                                     <div className="w-20 h-20 bg-white rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-2 shadow-sm relative">
-                                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
+                                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                                                         <button 
                                                             onClick={() => removeFromCart(item.id)}
                                                             className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all border border-gray-100"

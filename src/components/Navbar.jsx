@@ -66,8 +66,8 @@ const Navbar = () => {
                         className="flex items-center"
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     >
-                        <img src="/images/parity-icon-new.png" alt="Icon" className="h-12 w-auto mr-3 mix-blend-multiply" />
-                        <img src="/images/parity-logo-new.png" alt="PARITY Logo" className="h-10 w-auto mix-blend-multiply" />
+                        <img src="/images/parity-icon-new.png" alt="Icon" className="h-12 w-auto mr-3 object-contain" />
+                        <img src="/images/parity-logo-new.png" alt="PARITY Logo" className="h-10 w-auto object-contain" />
                     </Link>
 
                     {/* Desktop Menu */}

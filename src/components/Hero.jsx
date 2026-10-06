@@ -27,18 +27,18 @@ const Hero = () => {
                     style={{ background: 'radial-gradient(circle, rgba(250,200,80,0.2) 0%, transparent 60%)' }}
                 />
             </div>
-            {/* Darker overlay for text crispness with embedded family meal image */}
+            {/* Background image overlay with clean, warm visibility */}
             <div className="absolute inset-0 z-10">
                 <img
                     src="/images/family-meal.jpg"
                     alt="Family Meal"
-                    className="w-full h-full object-cover opacity-40 object-center"
+                    className="w-full h-full object-cover opacity-25 object-center"
                 />
-                <div className="absolute inset-0 bg-brand-green/70 mix-blend-multiply" />
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/90 via-brand-dark/75 to-brand-dark/85" />
             </div>
 
             {/* Content */}
-            <div className="relative z-20 container mx-auto px-6 text-center lg:text-left text-white mt-20 flex flex-col items-center lg:items-start">
+            <div className="relative z-20 container mx-auto px-6 text-center lg:text-left text-white mt-16 flex flex-col lg:flex-row items-center justify-between gap-12">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -68,14 +68,32 @@ const Hero = () => {
                             Explore Products
                             <ArrowRight className="ml-2" size={20} />
                         </a>
-                        <button
+                        <a
+                            href="/parity-kachi-ghani-mustard-oil"
                             className="group px-10 py-4 rounded-full font-bold text-lg border-2 border-white hover:bg-white hover:text-brand-dark transition-all flex items-center backdrop-blur-sm"
                         >
                             <div className="w-8 h-8 bg-white text-brand-dark rounded-full flex items-center justify-center mr-3 group-hover:bg-brand-dark group-hover:text-white transition-colors">
                                 <Play size={12} fill="currentColor" />
                             </div>
-                            Watch Our Story
-                        </button>
+                            Our Oil
+                        </a>
+                    </div>
+                </motion.div>
+
+                {/* Flagship Bottle Hero Visual */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 1.2, delay: 0.2 }}
+                    className="hidden lg:flex flex-1 items-center justify-center relative max-w-md"
+                >
+                    <div className="relative flex items-center justify-center">
+                        <div className="absolute w-72 h-72 rounded-full bg-brand-gold/20 blur-3xl" />
+                        <img
+                            src="/images/parity-mustard-oil-bottle.png"
+                            alt="Parity Pure Cold Pressed Mustard Oil"
+                            className="relative max-h-[480px] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform duration-700 select-none"
+                        />
                     </div>
                 </motion.div>
             </div>
