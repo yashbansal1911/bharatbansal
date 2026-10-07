@@ -17,8 +17,8 @@ const OTP_LENGTH = 4;
 const SESSION_STORAGE_KEY = 'parity_user_session';
 const SAVED_ADDRESS_KEY = 'parity_saved_address';
 const CHECKOUT_STEP_KEY = 'parity_checkout_step';
-const SESSION_DURATION_DAYS = 7; // Keep verified user logged in for 7 days
-const SESSION_DURATION_MS = SESSION_DURATION_DAYS * 24 * 60 * 60 * 1000;
+const SESSION_DURATION_MINUTES = 10; // Keep verified user logged in for 10 minutes
+const SESSION_DURATION_MS = SESSION_DURATION_MINUTES * 60 * 1000;
 
 const saveUserSession = (userData) => {
     try {
