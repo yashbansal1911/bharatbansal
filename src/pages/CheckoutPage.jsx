@@ -13,11 +13,99 @@ const isLocalhost = typeof window !== 'undefined' && (window.location.hostname =
 const API_BASE_URL = !isLocalhost && (rawApiUrl.includes('localhost') || rawApiUrl.includes('onrender.com')) ? '' : rawApiUrl;
 const OTP_LENGTH = 4;
 
+// ─── Session & Persistence Configuration ───────────────────────────────────────
+const SESSION_STORAGE_KEY = 'parity_user_session';
+const SAVED_ADDRESS_KEY = 'parity_saved_address';
+const CHECKOUT_STEP_KEY = 'parity_checkout_step';
+const SESSION_DURATION_DAYS = 7; // Keep verified user logged in for 7 days
+const SESSION_DURATION_MS = SESSION_DURATION_DAYS * 24 * 60 * 60 * 1000;
+
+const saveUserSession = (userData) => {
+    try {
+        const session = {
+            ...userData,
+            verifiedAt: Date.now(),
+            expiresAt: Date.now() + SESSION_DURATION_MS,
+        };
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+        return session;
+    } catch (e) {
+        console.warn('Failed to save session:', e);
+        return null;
+    }
+};
+
+const getActiveUserSession = () => {
+    try {
+        const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+        if (!raw) return null;
+        const session = JSON.parse(raw);
+        if (!session || !session.expiresAt) return null;
+        if (Date.now() > session.expiresAt) {
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+            return null;
+        }
+        return session;
+    } catch (e) {
+        return null;
+    }
+};
+
+const clearUserSession = () => {
+    try {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+        sessionStorage.removeItem(CHECKOUT_STEP_KEY);
+    } catch (e) {}
+};
+
+const getSavedAddress = () => {
+    try {
+        const raw = localStorage.getItem(SAVED_ADDRESS_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+};
+
+const saveAddress = (addressData) => {
+    try {
+        localStorage.setItem(SAVED_ADDRESS_KEY, JSON.stringify(addressData));
+    } catch (e) {}
+};
 
 const CheckoutPage = () => {
     const { cart, getCartTotal, updateQuantity, removeFromCart, clearCart } = useCart();
     const navigate = useNavigate();
-    const [step, setStep] = useState(1); // 1: Login, 2: Address, 3: Payment, 4: Success
+
+    // Verified Session State (Restored automatically on page refresh / return)
+    const [userSession, setUserSession] = useState(() => getActiveUserSession());
+    const [step, setStep] = useState(() => {
+        const session = getActiveUserSession();
+        if (!session) return 1;
+        const savedStep = Number(sessionStorage.getItem(CHECKOUT_STEP_KEY));
+        return (savedStep === 2 || savedStep === 3) ? savedStep : 2;
+    });
+
+    // Form Data initialized with verified session and saved address
+    const [formData, setFormData] = useState(() => {
+        const session = getActiveUserSession();
+        const savedAddr = getSavedAddress() || {};
+        return {
+            firstName: savedAddr.firstName || session?.firstName || '',
+            lastName: savedAddr.lastName || session?.lastName || '',
+            email: session?.email || savedAddr.email || '',
+            phone: session?.phone || savedAddr.phone || '',
+            address: savedAddr.address || '',
+            city: savedAddr.city || '',
+            state: savedAddr.state || '',
+            zip: savedAddr.zip || '',
+            cardName: '',
+            cardNumber: '',
+            expiryDate: '',
+            cvv: '',
+            upiId: ''
+        };
+    });
 
     // Auth State - Email, Phone & Google
     const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'phone'
@@ -38,6 +126,61 @@ const CheckoutPage = () => {
     const [otpInfo, setOtpInfo] = useState('');
     const [error, setError] = useState('');
     const [resendCountdown, setResendCountdown] = useState(0);
+
+    // Navigation and Browser History handler
+    const goToStep = (newStep, replace = false) => {
+        setStep(newStep);
+        try {
+            sessionStorage.setItem(CHECKOUT_STEP_KEY, String(newStep));
+            if (replace) {
+                window.history.replaceState({ checkoutStep: newStep }, '', window.location.href);
+            } else {
+                window.history.pushState({ checkoutStep: newStep }, '', window.location.href);
+            }
+        } catch (e) {}
+        window.scrollTo(0, 0);
+    };
+
+    // Keep browser back button navigation smooth without losing login
+    useEffect(() => {
+        try {
+            window.history.replaceState({ checkoutStep: step }, '', window.location.href);
+        } catch (e) {}
+
+        const handlePopState = (e) => {
+            const activeSession = getActiveUserSession();
+            if (e.state && typeof e.state.checkoutStep === 'number') {
+                const targetStep = e.state.checkoutStep;
+                if (targetStep === 1 && activeSession) {
+                    setStep(2);
+                    sessionStorage.setItem(CHECKOUT_STEP_KEY, '2');
+                } else {
+                    setStep(targetStep);
+                    sessionStorage.setItem(CHECKOUT_STEP_KEY, String(targetStep));
+                }
+            } else if (activeSession) {
+                setStep(2);
+                sessionStorage.setItem(CHECKOUT_STEP_KEY, '2');
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    // Explicit Sign Out / Switch Account
+    const handleSignOut = () => {
+        clearUserSession();
+        setUserSession(null);
+        setIsEmailOtpSent(false);
+        setIsPhoneOtpSent(false);
+        setEmailOtp('');
+        setPhoneOtp('');
+        setEmailVerificationToken('');
+        setOtpInfo('');
+        setError('');
+        goToStep(1, true);
+    };
 
     // OTP Countdown Timer Effect
     useEffect(() => {
@@ -60,17 +203,24 @@ const CheckoutPage = () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
-            // Auto-fill form
+            // Auto-fill form and persist session
             const nameParts = user.displayName ? user.displayName.split(' ') : ['Guest', ''];
+            const session = saveUserSession({
+                email: user.email,
+                firstName: nameParts[0] || '',
+                lastName: nameParts.slice(1).join(' ') || '',
+                method: 'google',
+            });
+            setUserSession(session);
 
             setFormData(prev => ({
                 ...prev,
                 email: user.email,
-                firstName: nameParts[0] || '',
-                lastName: nameParts.slice(1).join(' ') || ''
+                firstName: prev.firstName || nameParts[0] || '',
+                lastName: prev.lastName || nameParts.slice(1).join(' ') || ''
             }));
 
-            setStep(2);
+            goToStep(2);
         } catch (err) {
             console.error(err);
             setError("Google Sign-In Failed: " + err.message);
@@ -135,8 +285,13 @@ const CheckoutPage = () => {
 
         // Development Testing Bypass
         if (emailOtp === '1234') {
+            const session = saveUserSession({
+                email: otpEmail.trim().toLowerCase(),
+                method: 'email',
+            });
+            setUserSession(session);
             setFormData(prev => ({ ...prev, email: otpEmail.trim().toLowerCase() }));
-            setStep(2);
+            goToStep(2);
             setOtpInfo('Email verified successfully.');
             setIsVerifyingOtp(false);
             return;
@@ -160,8 +315,13 @@ const CheckoutPage = () => {
                 throw new Error(data?.message || 'Invalid verification code. Please try again.');
             }
 
+            const session = saveUserSession({
+                email: otpEmail.trim().toLowerCase(),
+                method: 'email',
+            });
+            setUserSession(session);
             setFormData(prev => ({ ...prev, email: otpEmail.trim().toLowerCase() }));
-            setStep(2);
+            goToStep(2);
             setOtpInfo(data?.message || 'Email verified successfully.');
         } catch (err) {
             console.error('OTP verification failed:', err);
@@ -248,8 +408,13 @@ const CheckoutPage = () => {
 
         // Development Bypass
         if (phoneOtp === '123456') {
+            const session = saveUserSession({
+                phone: phoneNumber,
+                method: 'phone',
+            });
+            setUserSession(session);
             setFormData(prev => ({ ...prev, phone: phoneNumber }));
-            setStep(2);
+            goToStep(2);
             setOtpInfo('Phone verified successfully (Dev Bypass).');
             setIsVerifyingOtp(false);
             return;
@@ -262,8 +427,13 @@ const CheckoutPage = () => {
             const result = await confirmationResult.confirm(phoneOtp);
             const user = result.user;
             
+            const session = saveUserSession({
+                phone: user.phoneNumber,
+                method: 'phone',
+            });
+            setUserSession(session);
             setFormData(prev => ({ ...prev, phone: user.phoneNumber }));
-            setStep(2);
+            goToStep(2);
             setOtpInfo('Phone verified successfully.');
         } catch (err) {
             console.error('Phone OTP verification failed:', err);
@@ -272,22 +442,6 @@ const CheckoutPage = () => {
             setIsVerifyingOtp(false);
         }
     };
-
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        address: '',
-        city: '',
-        state: '',
-        zip: '',
-        cardName: '',
-        cardNumber: '',
-        expiryDate: '',
-        cvv: '',
-        upiId: ''
-    });
 
     const [paymentMethod, setPaymentMethod] = useState('upi'); // 'upi', 'card', 'cod'
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -344,8 +498,17 @@ const CheckoutPage = () => {
 
     const handleAddressSubmit = (e) => {
         e.preventDefault();
-        setStep(3);
-        window.scrollTo(0, 0);
+        saveAddress({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip,
+        });
+        goToStep(3);
     };
 
     // ─── Razorpay SDK Loader ────────────────────────────────────────────────────
@@ -405,8 +568,8 @@ const CheckoutPage = () => {
                 if (!res.ok) throw new Error(data?.message || 'Failed to place order.');
                 setPlacedOrderId(data.orderId);
                 clearCart();
-                setStep(4);
-                window.scrollTo(0, 0);
+                sessionStorage.removeItem(CHECKOUT_STEP_KEY);
+                goToStep(4);
             } catch (err) {
                 setError(err.message || 'Failed to place order. Please try again.');
             } finally {
@@ -476,8 +639,8 @@ const CheckoutPage = () => {
                         if (!verifyRes.ok) throw new Error(verifyJson?.message || 'Payment verification failed.');
                         setPlacedOrderId(verifyJson.orderId);
                         clearCart();
-                        setStep(4);
-                        window.scrollTo(0, 0);
+                        sessionStorage.removeItem(CHECKOUT_STEP_KEY);
+                        goToStep(4);
                     } catch (err) {
                         setError(err.message || 'Payment verification failed. Please contact support.');
                     } finally {
@@ -897,6 +1060,30 @@ const CheckoutPage = () => {
                                 <h2 className="text-2xl font-serif font-bold text-brand-dark mb-6 flex items-center gap-2">
                                     <MapPin className="text-brand-gold" /> Shipping Address
                                 </h2>
+
+                                {userSession && (
+                                    <div className="flex items-center justify-between p-4 mb-6 bg-brand-gold/10 border border-brand-gold/25 rounded-2xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-brand-green/15 flex items-center justify-center text-brand-green flex-shrink-0">
+                                                <CheckCircle size={18} />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 font-medium">Verified customer account</p>
+                                                <p className="text-sm font-bold text-brand-dark">
+                                                    {userSession.email || userSession.phone || formData.email || formData.phone}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleSignOut}
+                                            className="text-xs text-gray-500 hover:text-red-600 font-bold underline transition-colors px-3 py-1.5 rounded-lg hover:bg-white/70"
+                                        >
+                                            Sign Out / Switch Account
+                                        </button>
+                                    </div>
+                                )}
+
                                 <form onSubmit={handleAddressSubmit}>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div>
@@ -1096,7 +1283,11 @@ const CheckoutPage = () => {
                                 </AnimatePresence>
 
                                 <div className="mb-6">
-                                    <button onClick={() => setStep(2)} className="flex items-center text-gray-500 hover:text-brand-gold font-medium transition-colors">
+                                    <button
+                                        type="button"
+                                        onClick={() => goToStep(2)}
+                                        className="flex items-center text-gray-500 hover:text-brand-gold font-medium transition-colors"
+                                    >
                                         <ArrowLeft size={16} className="mr-1" /> Back to Shipping
                                     </button>
                                 </div>
