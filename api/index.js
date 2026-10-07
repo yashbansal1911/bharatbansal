@@ -106,6 +106,31 @@ const generateOrderId = () => {
   return `ORD-${ts}-${rand}`;
 };
 const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 10);
+const OTP_SECRET = process.env.OTP_SECRET || 'parity_foods_otp_token_secret_key_2026';
+
+const createOtpToken = (email, codeHash, expiresAt) => {
+  const expiresAtMs = expiresAt instanceof Date ? expiresAt.getTime() : Number(expiresAt);
+  const payload = `${email}:${codeHash}:${expiresAtMs}`;
+  const sig = crypto.createHmac('sha256', OTP_SECRET).update(payload).digest('hex');
+  return Buffer.from(JSON.stringify({ email, codeHash, expiresAt: expiresAtMs, sig })).toString('base64url');
+};
+
+const verifyOtpToken = (token, email, code) => {
+  if (!token) return null;
+  try {
+    const decoded = JSON.parse(Buffer.from(token, 'base64url').toString('utf8'));
+    if (decoded.email !== email.trim().toLowerCase()) return { valid: false, message: 'Token email mismatch' };
+    const payload = `${decoded.email}:${decoded.codeHash}:${decoded.expiresAt}`;
+    const expectedSig = crypto.createHmac('sha256', OTP_SECRET).update(payload).digest('hex');
+    if (expectedSig !== decoded.sig) return { valid: false, message: 'Invalid token signature' };
+    if (Date.now() > decoded.expiresAt) return { valid: false, message: 'Code has expired. Please request a new one.' };
+    if (hashCode(code) !== decoded.codeHash) return { valid: false, message: 'Invalid code. Please try again.' };
+    return { valid: true };
+  } catch (e) {
+    return null;
+  }
+};
+
 const getResend = () => new Resend(RESEND_API_KEY);
 const getRazorpay = () => new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || '',
@@ -201,9 +226,12 @@ app.post('/api/auth/request-otp', async (req, res) => {
       });
     }
 
+    const token = createOtpToken(normalizedEmail, hashCode(code), expiresAt);
+
     res.json({
       success: true,
       message: `Verification code sent to ${normalizedEmail}.`,
+      token,
     });
   } catch (err) {
     console.error('[OTP] request-otp error:', err);
@@ -214,7 +242,7 @@ app.post('/api/auth/request-otp', async (req, res) => {
 // ─── OTP: Verify ─────────────────────────────────────────────────────────────
 app.post('/api/auth/verify-otp', async (req, res) => {
   try {
-    const { email, code } = req.body;
+    const { email, code, token } = req.body;
     if (!email || !code) return res.status(400).json({ message: 'Email and code are required' });
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -222,7 +250,20 @@ app.post('/api/auth/verify-otp', async (req, res) => {
     // Dev bypass
     if (code === '1234') return res.json({ message: 'Email verified successfully.' });
 
-    // Check memory first, then DB
+    // 1. Check stateless cryptographic token (100% resilient across serverless instances even without DB)
+    if (token) {
+      const tokenResult = verifyOtpToken(token, normalizedEmail, code);
+      if (tokenResult) {
+        if (tokenResult.valid) {
+          inMemoryOtps.delete(normalizedEmail);
+          return res.json({ message: 'Email verified successfully.' });
+        } else {
+          return res.status(400).json({ message: tokenResult.message });
+        }
+      }
+    }
+
+    // 2. Check memory first, then DB (fallback)
     let record = inMemoryOtps.get(normalizedEmail);
     if (!record && mongoose.connection.readyState === 1) {
       try { record = await Otp.findOne({ email: normalizedEmail }); } catch (e) {}

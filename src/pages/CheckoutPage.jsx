@@ -24,6 +24,7 @@ const CheckoutPage = () => {
     const [otpEmail, setOtpEmail] = useState('');
     const [emailOtp, setEmailOtp] = useState('');
     const [isEmailOtpSent, setIsEmailOtpSent] = useState(false);
+    const [emailVerificationToken, setEmailVerificationToken] = useState('');
     
     const [phoneNumber, setPhoneNumber] = useState('');
     const [phoneOtp, setPhoneOtp] = useState('');
@@ -105,6 +106,10 @@ const CheckoutPage = () => {
                 throw new Error(data?.message || 'Failed to send verification code.');
             }
 
+            if (data?.token) {
+                setEmailVerificationToken(data.token);
+            }
+
             setIsEmailOtpSent(true);
             setOtpInfo(data?.message || `Verification code sent to ${otpEmail}.`);
             setResendCountdown(30); // Start 30-second cooldown
@@ -143,7 +148,11 @@ const CheckoutPage = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email: otpEmail.trim().toLowerCase(), code: emailOtp })
+                body: JSON.stringify({
+                    email: otpEmail.trim().toLowerCase(),
+                    code: emailOtp,
+                    token: emailVerificationToken,
+                })
             });
 
             const data = await response.json();
