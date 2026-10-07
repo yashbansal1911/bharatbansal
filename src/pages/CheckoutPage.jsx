@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { ArrowLeft, CreditCard, MapPin, CheckCircle, Truck, Smartphone, ShieldCheck, Loader2, AlertCircle, Plus, Minus, Trash2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, MapPin, CheckCircle, Truck, Smartphone, ShieldCheck, Loader2, AlertCircle, Plus, Minus, Trash2, LogOut, BadgeCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { State, City } from 'country-state-city';
 import { auth } from '../config/firebase';
@@ -1062,25 +1062,50 @@ const CheckoutPage = () => {
                                 </h2>
 
                                 {userSession && (
-                                    <div className="flex items-center justify-between p-4 mb-6 bg-brand-gold/10 border border-brand-gold/25 rounded-2xl">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-brand-green/15 flex items-center justify-center text-brand-green flex-shrink-0">
-                                                <CheckCircle size={18} />
+                                    <div className="relative overflow-hidden rounded-2xl border border-brand-gold/25 bg-gradient-to-r from-brand-light via-white to-brand-gold/5 p-4 sm:p-5 shadow-sm transition-all duration-300 mb-8 hover:shadow-md hover:border-brand-gold/45">
+                                        {/* Decorative ambient glow */}
+                                        <div className="absolute top-0 right-0 -mt-6 -mr-6 w-28 h-28 rounded-full bg-brand-gold/10 blur-xl pointer-events-none" />
+                                        <div className="absolute bottom-0 left-1/4 -mb-6 w-24 h-24 rounded-full bg-brand-green/5 blur-xl pointer-events-none" />
+
+                                        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                            {/* User Identity Details */}
+                                            <div className="flex items-center gap-3.5">
+                                                <div className="relative flex-shrink-0">
+                                                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-dark to-brand-green flex items-center justify-center text-brand-gold shadow-md shadow-brand-dark/10">
+                                                        <BadgeCheck size={22} className="text-brand-gold" />
+                                                    </div>
+                                                    <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center shadow-sm">
+                                                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping opacity-75" />
+                                                    </span>
+                                                </div>
+
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                            Verified Customer
+                                                        </span>
+                                                        <span className="text-[11px] text-gray-400 font-medium hidden sm:inline">• Active Session</span>
+                                                    </div>
+                                                    <p className="text-sm sm:text-base font-bold text-brand-dark truncate tracking-tight">
+                                                        {userSession.email || userSession.phone || formData.email || formData.phone}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500 font-medium">Verified customer account</p>
-                                                <p className="text-sm font-bold text-brand-dark">
-                                                    {userSession.email || userSession.phone || formData.email || formData.phone}
-                                                </p>
+
+                                            {/* Trendy Switch Account Action */}
+                                            <div className="flex items-center sm:self-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSignOut}
+                                                    className="group flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-gray-600 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 border border-gray-200 shadow-sm transition-all duration-200 active:scale-95"
+                                                    title="Sign out of this session and switch to another account"
+                                                >
+                                                    <span>Switch Account</span>
+                                                    <LogOut size={14} className="text-gray-400 group-hover:text-red-500 group-hover:translate-x-0.5 transition-all" />
+                                                </button>
                                             </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleSignOut}
-                                            className="text-xs text-gray-500 hover:text-red-600 font-bold underline transition-colors px-3 py-1.5 rounded-lg hover:bg-white/70"
-                                        >
-                                            Sign Out / Switch Account
-                                        </button>
                                     </div>
                                 )}
 
@@ -1293,7 +1318,27 @@ const CheckoutPage = () => {
                                 </div>
 
                                 <h2 className="text-2xl font-serif font-bold text-brand-dark mb-2">Secure Payment Options</h2>
-                                <p className="text-sm text-gray-500 mb-8">Choose your preferred payment method to complete your purchase securely.</p>
+                                <p className="text-sm text-gray-500 mb-6">Choose your preferred payment method to complete your purchase securely.</p>
+
+                                {userSession && (
+                                    <div className="flex items-center justify-between p-3.5 px-4 mb-6 bg-brand-light/70 border border-brand-gold/25 rounded-2xl">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <BadgeCheck size={18} className="text-brand-gold flex-shrink-0" />
+                                            <p className="text-xs text-gray-600 truncate">
+                                                Purchasing as: <strong className="text-brand-dark font-bold">{userSession.email || userSession.phone || formData.email}</strong>
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleSignOut}
+                                            className="group flex items-center gap-1.5 text-xs text-gray-500 hover:text-red-600 font-semibold transition-colors ml-3 flex-shrink-0"
+                                            title="Sign out of this session"
+                                        >
+                                            <span>Switch</span>
+                                            <LogOut size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                                        </button>
+                                    </div>
+                                )}
 
                                 {error && (
                                     <div className="bg-red-50 text-red-500 px-4 py-3 rounded-xl mb-6 text-sm flex items-center">
