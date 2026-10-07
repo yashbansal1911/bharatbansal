@@ -6,7 +6,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { State, City } from 'country-state-city';
 import { auth } from '../config/firebase';
 import { GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import emailjs from '@emailjs/browser';
 import SEOHead from '../components/SEOHead';
 
 const rawApiUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
@@ -79,7 +78,7 @@ const CheckoutPage = () => {
         }
     };
 
-    // Handle Email OTP (API registration + EmailJS delivery)
+    // Handle Email OTP (Sent securely via Resend API)
     const handleSendEmailOtp = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
         setError('');
@@ -93,7 +92,6 @@ const CheckoutPage = () => {
         setIsSendingOtp(true);
 
         try {
-            // 1. Request OTP generation from backend
             const response = await fetch(`${API_BASE_URL}/api/auth/request-otp`, {
                 method: 'POST',
                 headers: {
@@ -107,41 +105,8 @@ const CheckoutPage = () => {
                 throw new Error(data?.message || 'Failed to send verification code.');
             }
 
-            const otpCode = data?.code;
-
-            // 2. Direct browser dispatch via EmailJS
-            if (otpCode) {
-                try {
-                    const serviceId = (import.meta.env.VITE_EMAILJS_OTP_SERVICE_ID && import.meta.env.VITE_EMAILJS_OTP_SERVICE_ID !== 'service_67rwggu')
-                        ? import.meta.env.VITE_EMAILJS_OTP_SERVICE_ID
-                        : (import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_196fkgq');
-                    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s';
-                    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy';
-
-                    const templateParams = {
-                        name: otpEmail.split('@')[0],
-                        from_name: 'B Forever Foods',
-                        to_name: otpEmail.split('@')[0],
-                        reply_to: otpEmail.trim().toLowerCase(),
-                        email: otpEmail.trim().toLowerCase(),
-                        to_email: otpEmail.trim().toLowerCase(),
-                        user_email: otpEmail.trim().toLowerCase(),
-                        recipient: otpEmail.trim().toLowerCase(),
-                        message: `Your verification code is: ${otpCode}. This code will expire in 10 minutes.`,
-                        otp_code: otpCode,
-                        code: otpCode,
-                        otp: otpCode,
-                        passcode: otpCode,
-                    };
-
-                    await emailjs.send(serviceId, templateId, templateParams, { publicKey });
-                } catch (emailErr) {
-                    console.warn('EmailJS browser dispatch notice:', emailErr);
-                }
-            }
-
             setIsEmailOtpSent(true);
-            setOtpInfo(`Verification code sent to ${otpEmail}.`);
+            setOtpInfo(data?.message || `Verification code sent to ${otpEmail}.`);
             setResendCountdown(30); // Start 30-second cooldown
         } catch (err) {
             console.error('OTP request failed:', err);

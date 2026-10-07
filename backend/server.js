@@ -54,11 +54,13 @@ requiredEnv.forEach((key) => {
   }
 });
 
-const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_startup');
-
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const EMAIL_SENDER_ADDRESS = process.env.EMAIL_SENDER_ADDRESS || 'info@bforeverfoods.com';
+const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'B Forever Foods';
+const resend = new Resend(RESEND_API_KEY || '');
 
 const ensureEmailConfig = () => {
-  if (!process.env.EMAIL_SENDER_ADDRESS || !process.env.RESEND_API_KEY) {
+  if (!EMAIL_SENDER_ADDRESS || !RESEND_API_KEY) {
     throw Object.assign(new Error('Email sender credentials or Resend API key are not configured.'), { statusCode: 500 });
   }
 };
@@ -66,8 +68,7 @@ const ensureEmailConfig = () => {
 const hashCode = (code) => crypto.createHash('sha256').update(code).digest('hex');
 const generateCode = () => Math.floor(1000 + Math.random() * 9000).toString();
 
-// ─── Razorpay Client ───────────────────────────────────────────────────────────
-const razorpay = new Razorpay({
+const getRazorpay = () => new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || '',
   key_secret: process.env.RAZORPAY_KEY_SECRET || '',
 });
@@ -183,29 +184,40 @@ app.post('/api/auth/request-otp', async (req, res, next) => {
       ).catch((err) => console.warn('MongoDB OTP save warning:', err.message));
     }
 
-    // Send email via Resend if configured
+    // Send email via Resend
     let emailSent = false;
     try {
-      if (process.env.RESEND_API_KEY && process.env.EMAIL_SENDER_ADDRESS) {
-        const { error } = await resend.emails.send({
-          from: `${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} <${process.env.EMAIL_SENDER_ADDRESS}>`,
-          to: [normalizedEmail],
-          subject: `Verification code for your ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} account`,
-          text: `Hello,\n\nYour verification code is ${code}.\n\nThis code will expire in ${OTP_EXPIRY_MINUTES} minutes.\n\nBest regards,\nThe ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} Team`,
-          html: `
-            <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
-                <p>Hello,</p>
-                <p>Your verification code is: <strong style="font-size: 24px; color: #4B5930; background: #f9f9f9; padding: 5px 10px; border-radius: 4px; border: 1px solid #ddd;">${code}</strong></p>
-                <p>This code will expire in ${OTP_EXPIRY_MINUTES} minutes. If you did not request this code, you can safely ignore this email.</p>
-                <p>Best regards,<br><strong>The ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} Team</strong></p>
+      const { data, error } = await resend.emails.send({
+        from: `${EMAIL_FROM_NAME} <${EMAIL_SENDER_ADDRESS}>`,
+        to: [normalizedEmail],
+        subject: `Your verification code — ${EMAIL_FROM_NAME}`,
+        text: `Hello,\n\nYour verification code is ${code}.\n\nThis code will expire in ${OTP_EXPIRY_MINUTES} minutes.\n\nBest regards,\nThe ${EMAIL_FROM_NAME} Team`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; color: #2A3013; background: #ffffff; border: 1px solid #e8e8e8; border-radius: 16px; overflow: hidden;">
+            <div style="background: #4B5930; padding: 24px; text-align: center;">
+              <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 1px;">PARITY MUSTARD OIL</h2>
+              <p style="color: #E6C16E; margin: 4px 0 0; font-size: 13px;">B Forever Foods Pvt Ltd</p>
             </div>
-          `,
-        });
-        if (error) {
-          console.warn('Resend email warning:', error.message);
-        } else {
-          emailSent = true;
-        }
+            <div style="padding: 32px 28px;">
+              <p style="margin: 0 0 16px; font-size: 16px;">Hello,</p>
+              <p style="margin: 0 0 20px; font-size: 15px; color: #555;">Use the verification code below to verify your email and complete your order:</p>
+              <div style="text-align: center; padding: 22px; background: #FDFBF7; border: 2px dashed #D19E31; border-radius: 12px; margin: 0 0 24px;">
+                <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #4B5930; font-family: monospace;">${code}</span>
+              </div>
+              <p style="margin: 0 0 8px; font-size: 13px; color: #777;">This code expires in <strong>${OTP_EXPIRY_MINUTES} minutes</strong>.</p>
+              <p style="margin: 0; font-size: 13px; color: #999;">If you didn't request this code, you can safely ignore this email.</p>
+            </div>
+            <div style="background: #FDFBF7; padding: 16px; text-align: center; border-top: 1px solid #eee; font-size: 12px; color: #888;">
+              © ${new Date().getFullYear()} B Forever Foods Pvt Ltd. All rights reserved.
+            </div>
+          </div>
+        `,
+      });
+      if (error) {
+        console.warn('Resend email warning:', error.message);
+      } else {
+        emailSent = true;
+        console.log(`[OTP] Sent successfully via Resend to ${normalizedEmail}, id: ${data?.id}`);
       }
     } catch (e) {
       console.warn('Resend API exception:', e.message);
@@ -214,9 +226,8 @@ app.post('/api/auth/request-otp', async (req, res, next) => {
     res.json({
       success: true,
       message: emailSent
-        ? 'Verification code sent to your email.'
-        : `Verification code sent! (Use code ${code} or bypass 1234)`,
-      code,
+        ? `Verification code sent to ${normalizedEmail}.`
+        : 'Verification code sent to your email.',
     });
   } catch (error) {
     next(error);
@@ -282,7 +293,7 @@ app.post('/api/orders/create-razorpay-order', async (req, res, next) => {
       return res.status(503).json({ message: 'Payment gateway not configured. Please contact support.' });
     }
 
-    const razorpayOrder = await razorpay.orders.create({
+    const razorpayOrder = await getRazorpay().orders.create({
       amount: Math.round(amount * 100), // convert to paise
       currency,
       receipt: receipt || generateOrderId(),

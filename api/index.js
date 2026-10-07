@@ -97,6 +97,8 @@ const generateOrderId = () => {
   return `ORD-${ts}-${rand}`;
 };
 const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 10);
+const EMAIL_SENDER_ADDRESS = process.env.EMAIL_SENDER_ADDRESS || 'info@bforeverfoods.com';
+const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'B Forever Foods';
 const getResend = () => new Resend(process.env.RESEND_API_KEY || '');
 const getRazorpay = () => new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || '',
@@ -137,43 +139,54 @@ app.post('/api/auth/request-otp', async (req, res) => {
       ).catch((e) => console.warn('[OTP] DB save warning:', e.message));
     }
 
-    // Send email
+    // Send email via Resend
     let emailSent = false;
-    if (process.env.RESEND_API_KEY && process.env.EMAIL_SENDER_ADDRESS) {
-      try {
-        const { error } = await getResend().emails.send({
-          from: `${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} <${process.env.EMAIL_SENDER_ADDRESS}>`,
-          to: [normalizedEmail],
-          subject: `Your verification code — ${process.env.EMAIL_FROM_NAME || 'B Forever Foods'}`,
-          html: `
-            <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#333;">
-              <div style="background:#4B5930;padding:20px 32px;border-radius:12px 12px 0 0;">
-                <h2 style="color:#fff;margin:0;font-size:18px;">Email Verification</h2>
-              </div>
-              <div style="background:#fff;padding:24px 32px;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 12px 12px;">
-                <p style="margin:0 0 16px;">Hello,</p>
-                <p style="margin:0 0 16px;">Your verification code is:</p>
-                <div style="text-align:center;padding:20px;background:#f9f9f9;border-radius:8px;border:1px solid #ddd;margin:0 0 16px;">
-                  <strong style="font-size:36px;letter-spacing:12px;color:#4B5930;">${code}</strong>
-                </div>
-                <p style="margin:0 0 8px;color:#666;font-size:14px;">This code expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
-                <p style="margin:0;color:#666;font-size:14px;">If you didn't request this, you can safely ignore this email.</p>
-              </div>
+    let emailError = null;
+    try {
+      const resendClient = getResend();
+      const { data, error } = await resendClient.emails.send({
+        from: `${EMAIL_FROM_NAME} <${EMAIL_SENDER_ADDRESS}>`,
+        to: [normalizedEmail],
+        subject: `Your verification code — ${EMAIL_FROM_NAME}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; color: #2A3013; background: #ffffff; border: 1px solid #e8e8e8; border-radius: 16px; overflow: hidden;">
+            <div style="background: #4B5930; padding: 24px; text-align: center;">
+              <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 1px;">PARITY MUSTARD OIL</h2>
+              <p style="color: #E6C16E; margin: 4px 0 0; font-size: 13px;">B Forever Foods Pvt Ltd</p>
             </div>
-          `,
-        });
-        if (!error) emailSent = true;
-        else console.warn('[OTP] Resend warning:', error.message);
-      } catch (e) {
-        console.warn('[OTP] Resend exception:', e.message);
+            <div style="padding: 32px 28px;">
+              <p style="margin: 0 0 16px; font-size: 16px;">Hello,</p>
+              <p style="margin: 0 0 20px; font-size: 15px; color: #555;">Use the verification code below to verify your email and complete your order:</p>
+              <div style="text-align: center; padding: 22px; background: #FDFBF7; border: 2px dashed #D19E31; border-radius: 12px; margin: 0 0 24px;">
+                <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #4B5930; font-family: monospace;">${code}</span>
+              </div>
+              <p style="margin: 0 0 8px; font-size: 13px; color: #777;">This code expires in <strong>${OTP_EXPIRY_MINUTES} minutes</strong>.</p>
+              <p style="margin: 0; font-size: 13px; color: #999;">If you didn't request this code, you can safely ignore this email.</p>
+            </div>
+            <div style="background: #FDFBF7; padding: 16px; text-align: center; border-top: 1px solid #eee; font-size: 12px; color: #888;">
+              © ${new Date().getFullYear()} B Forever Foods Pvt Ltd. All rights reserved.
+            </div>
+          </div>
+        `,
+      });
+
+      if (error) {
+        console.error('[OTP] Resend delivery error:', error);
+        emailError = error.message;
+      } else {
+        emailSent = true;
+        console.log(`[OTP] Sent successfully via Resend to ${normalizedEmail}, id: ${data?.id}`);
       }
+    } catch (e) {
+      console.error('[OTP] Resend exception:', e.message);
+      emailError = e.message;
     }
 
     res.json({
       success: true,
-      message: 'Verification code sent to your email.',
-      code,
-      emailSent,
+      message: emailSent
+        ? `Verification code sent to ${normalizedEmail}.`
+        : 'Verification code sent to your email.',
     });
   } catch (err) {
     console.error('[OTP] request-otp error:', err);
@@ -282,13 +295,12 @@ app.post('/api/orders/cod', async (req, res) => {
 
 // ─── Order Confirmation Email ─────────────────────────────────────────────────
 async function sendOrderEmail(order) {
-  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_SENDER_ADDRESS) return;
   try {
     const rows = (order.items || []).map((i) => `<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">${i.name} (${i.packaging})</td><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;">${i.quantity}</td><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;">₹${Number(i.lineTotal).toFixed(2)}</td></tr>`).join('');
     await getResend().emails.send({
-      from: `${process.env.EMAIL_FROM_NAME || 'B Forever Foods'} <${process.env.EMAIL_SENDER_ADDRESS}>`,
+      from: `${EMAIL_FROM_NAME} <${EMAIL_SENDER_ADDRESS}>`,
       to: [order.customer.email],
-      subject: `Order Confirmed – ${order.orderId} | B Forever Foods`,
+      subject: `Order Confirmed – ${order.orderId} | ${EMAIL_FROM_NAME}`,
       html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:#4B5930;padding:24px 32px;border-radius:12px 12px 0 0;"><h1 style="color:#fff;margin:0;font-size:22px;">Order Confirmed!</h1><p style="color:#d4e09a;margin:4px 0 0;">Thank you, ${order.customer.firstName}.</p></div><div style="padding:24px 32px;border:1px solid #e8e8e8;border-top:none;"><p>Order ID: <strong style="color:#4B5930;">${order.orderId}</strong></p><table style="width:100%;border-collapse:collapse;">${rows}</table><p style="text-align:right;font-size:18px;font-weight:bold;color:#4B5930;">Total: ₹${Number(order.totalAmount).toFixed(2)}</p></div></div>`,
     });
   } catch (e) { console.warn('[Email] Order confirmation failed:', e.message); }
