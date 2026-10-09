@@ -906,59 +906,35 @@ const CheckoutPage = () => {
                                         </form>
                                     )
                                 ) : (
-                                    !isPhoneOtpSent ? (
-                                        <div className="space-y-6">
-                                            <form onSubmit={handleSendPhoneOtp}>
-                                                <div className="mb-4">
-                                                    <label className="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
-                                                    <div className="relative">
-                                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">+91</span>
-                                                        <input
-                                                            type="tel"
-                                                            value={phoneNumber}
-                                                            onChange={(e) => {
-                                                                setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
-                                                                setError('');
-                                                                setOtpInfo('');
-                                                            }}
-                                                            placeholder="Enter 10-digit number"
-                                                            required
-                                                            className="w-full pl-14 pr-4 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all font-semibold"
-                                                        />
-                                                    </div>
-                                                     <p className="text-xs text-gray-400 mt-2">
-                                                        We will send a 6-digit SMS verification code to your phone number via Firebase (Free service).
-                                                     </p>
-                                                </div>
-                                                <button
-                                                    type="submit"
-                                                    disabled={isSendingOtp}
-                                                    className="w-full bg-brand-dark text-white py-3 rounded-xl font-bold hover:bg-brand-gold transition-colors shadow-lg flex justify-center items-center"
-                                                >
-                                                    {isSendingOtp ? (
-                                                        <Loader2 className="animate-spin" />
-                                                    ) : (
-                                                        "Send OTP via SMS"
-                                                    )}
-                                                </button>
-                                                {canUseSandboxBypass && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setIsPhoneOtpSent(true);
-                                                            setOtpInfo("Sandbox Mode activated. Enter code '123456' to proceed!");
-                                                            setError('');
-                                                        }}
-                                                        className="w-full mt-3 bg-brand-gold/10 text-brand-dark border border-brand-gold/20 py-2.5 rounded-xl font-bold hover:bg-brand-gold/20 transition-all text-sm flex justify-center items-center gap-1.5 animate-pulse"
-                                                    >
-                                                        ✨ Continue via Sandbox Bypass (Code: 123456)
-                                                    </button>
-                                                )}
-                                            </form>
+                                    <div className="space-y-6">
+                                        <div className="text-center py-8 px-6 bg-gradient-to-b from-amber-50/50 via-white to-gray-50/40 rounded-2xl border border-amber-200/60 shadow-sm">
+                                            <div className="w-16 h-16 bg-amber-100 text-brand-gold rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                                                <Smartphone className="w-8 h-8 text-brand-gold" />
+                                            </div>
+                                            <span className="inline-block px-3 py-1 bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider rounded-full mb-3">
+                                                Coming Soon
+                                            </span>
+                                            <h3 className="text-xl font-bold text-brand-dark mb-2 font-serif">
+                                                Phone Login Coming Soon
+                                            </h3>
+                                            <p className="text-sm text-gray-600 max-w-sm mx-auto mb-6 leading-relaxed">
+                                                Login through phone will be available soon. Please try logging in through <strong>Email Address</strong> or <strong>Google</strong> in the meantime.
+                                            </p>
 
-                                            <div className="relative flex py-2 items-center">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setLoginMethod('email');
+                                                    setError('');
+                                                }}
+                                                className="w-full bg-brand-dark text-white py-3.5 rounded-xl font-bold hover:bg-brand-gold transition-colors shadow-md flex justify-center items-center gap-2"
+                                            >
+                                                Log In with Email Address
+                                            </button>
+
+                                            <div className="relative flex py-4 items-center">
                                                 <div className="flex-grow border-t border-gray-200"></div>
-                                                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span>
+                                                <span className="flex-shrink-0 mx-4 text-gray-400 text-xs font-semibold uppercase tracking-wider">OR</span>
                                                 <div className="flex-grow border-t border-gray-200"></div>
                                             </div>
 
@@ -966,7 +942,7 @@ const CheckoutPage = () => {
                                                 onClick={handleGoogleLogin}
                                                 type="button"
                                                 disabled={isLoading}
-                                                className="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex justify-center items-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                className="w-full bg-white border border-gray-300 text-gray-700 py-3.5 rounded-xl font-bold hover:bg-gray-50 transition-colors flex justify-center items-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
                                             >
                                                 {isLoading ? (
                                                     <Loader2 className="animate-spin" />
@@ -976,72 +952,7 @@ const CheckoutPage = () => {
                                                 Sign in with Google
                                             </button>
                                         </div>
-                                    ) : (
-                                        <form onSubmit={handleVerifyPhoneOtp}>
-                                            <div className="mb-6">
-                                                <label className="block text-gray-700 text-sm font-bold mb-2">Enter SMS OTP</label>
-                                                <div className="relative">
-                                                    <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-gold" size={20} />
-                                                    <input
-                                                        type="text"
-                                                        value={phoneOtp}
-                                                        onChange={(e) => {
-                                                            setPhoneOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
-                                                            setError('');
-                                                        }}
-                                                        placeholder="Enter 6-digit Code"
-                                                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none tracking-widest text-lg font-bold"
-                                                    />
-                                                </div>
-                                                <div className="flex justify-between items-center mt-3">
-                                                    <p className="text-xs text-gray-500">
-                                                        Sent to <span className="font-bold text-gray-700">{phoneNumber}</span>
-                                                    </p>
-                                                    <div className="flex items-center gap-4">
-                                                        {resendCountdown > 0 ? (
-                                                            <span className="text-xs text-gray-400 font-bold bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 flex items-center gap-1.5">
-                                                                <Loader2 size={10} className="animate-spin text-brand-gold" />
-                                                                Resend in {resendCountdown}s
-                                                            </span>
-                                                        ) : (
-                                                            <button
-                                                                type="button"
-                                                                onClick={handleSendPhoneOtp}
-                                                                className="text-xs text-brand-gold hover:text-brand-dark hover:underline font-bold transition-colors"
-                                                            >
-                                                                Resend SMS
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setIsPhoneOtpSent(false);
-                                                                setPhoneOtp('');
-                                                                setError('');
-                                                                setOtpInfo('');
-                                                                setResendCountdown(0);
-                                                            }}
-                                                            className="text-xs text-gray-400 hover:text-brand-dark hover:underline font-bold transition-colors"
-                                                        >
-                                                            Change Number
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                type="submit"
-                                                disabled={isVerifyingOtp || phoneOtp.length !== 6}
-                                                className="w-full bg-brand-green text-white py-4 rounded-xl font-bold hover:bg-green-700 transition-colors text-lg shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
-                                            >
-                                                {isVerifyingOtp ? (
-                                                    <Loader2 className="animate-spin" />
-                                                ) : (
-                                                    "Verify & Continue"
-                                                )}
-                                            </button>
-                                        </form>
-                                    )
+                                    </div>
                                 )}
 
                                 {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
