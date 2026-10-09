@@ -38,12 +38,12 @@ const Hero = () => {
             </div>
 
             {/* Content */}
-            <div className="relative z-20 container mx-auto px-6 text-center lg:text-left text-white mt-16 flex flex-col lg:flex-row items-center justify-between gap-12">
+            <div className="relative z-20 container mx-auto px-6 text-center text-white mt-16 flex flex-col items-center justify-center">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1 }}
-                    className="max-w-2xl lg:max-w-xl"
+                    className="max-w-3xl flex flex-col items-center"
                 >
                     <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full mb-8 border border-white/20">
                         <span className="w-2 h-2 bg-brand-gold rounded-full animate-pulse" />
@@ -55,12 +55,12 @@ const Hero = () => {
                         <span className="text-brand-gold italic">Mustard Oil</span>
                     </h1>
 
-                    <p className="text-xl md:text-2xl text-gray-200 lg:mx-0 max-w-2xl mb-12 font-light leading-relaxed">
+                    <p className="text-xl md:text-2xl text-gray-200 max-w-2xl mb-12 font-light leading-relaxed">
                         Good food starts with what you put in it.<br />
                         Kachi Ghani mustard oil, made with care for the food you make every day.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                         <a
                             href="#products"
                             className="bg-brand-gold text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-brand-dark transition-all flex items-center shadow-lg hover:shadow-xl"
@@ -77,23 +77,6 @@ const Hero = () => {
                             </div>
                             Our Oil
                         </a>
-                    </div>
-                </motion.div>
-
-                {/* Flagship Bottle Hero Visual */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 1.2, delay: 0.2 }}
-                    className="hidden lg:flex flex-1 items-center justify-center relative max-w-md"
-                >
-                    <div className="relative flex items-center justify-center">
-                        <div className="absolute w-72 h-72 rounded-full bg-brand-gold/20 blur-3xl" />
-                        <img
-                            src="/images/parity-mustard-oil-bottle.png"
-                            alt="Parity Pure Cold Pressed Mustard Oil"
-                            className="relative max-h-[480px] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform duration-700 select-none"
-                        />
                     </div>
                 </motion.div>
             </div>
