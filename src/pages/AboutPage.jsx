@@ -29,25 +29,25 @@ const AboutPage = () => {
                     </svg>
                 </div>
 
-                <div className="container mx-auto px-6 relative z-10 text-center">
+                <div className="container mx-auto px-4 sm:px-6 relative z-10 text-center max-w-full">
                     <motion.h1
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-6xl md:text-8xl font-serif font-bold mb-8 speakable-title"
+                        className="text-4xl sm:text-6xl md:text-8xl font-serif font-bold mb-6 sm:mb-8 speakable-title"
                     >
                         Our Legacy
                     </motion.h1>
-                    <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed speakable-summary">
+                    <p className="text-base sm:text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed speakable-summary px-2">
                         From a humble beginning in the 1980s to a household name. This is the story of purity, perseverance, and PARITY by B Forever Foods Pvt Ltd.
                     </p>
                 </div>
             </section>
 
             {/* History & Timeline */}
-            <section className="py-32 container mx-auto px-6">
-                <div className="text-center mb-20">
-                    <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-4">Our Journey</h3>
-                    <h2 className="text-5xl font-serif font-bold text-brand-dark">Milestones of Excellence</h2>
+            <section className="py-20 sm:py-32 container mx-auto px-4 sm:px-6 max-w-full">
+                <div className="text-center mb-14 sm:mb-20">
+                    <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-3 sm:mb-4 text-xs sm:text-sm">Our Journey</h3>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-brand-dark">Milestones of Excellence</h2>
                 </div>
 
                 <div className="relative">

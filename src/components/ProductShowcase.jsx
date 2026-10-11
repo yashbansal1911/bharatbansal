@@ -43,21 +43,21 @@ const ProductShowcase = () => {
     };
 
     return (
-        <section id="products" className="py-32 bg-white relative overflow-hidden">
+        <section id="products" className="py-20 sm:py-32 bg-white relative overflow-hidden w-full max-w-full">
             {/* Subtle background blobs */}
-            <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5"
+            <div className="absolute top-0 right-0 w-72 sm:w-96 h-72 sm:h-96 rounded-full opacity-5 pointer-events-none"
                 style={{ background: 'radial-gradient(circle, #c8960c 0%, transparent 70%)' }} />
-            <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full opacity-5"
+            <div className="absolute bottom-0 left-0 w-64 sm:w-80 h-64 sm:h-80 rounded-full opacity-5 pointer-events-none"
                 style={{ background: 'radial-gradient(circle, #2d4a1e 0%, transparent 70%)' }} />
 
-            <div className="container mx-auto px-6 relative">
+            <div className="container mx-auto px-4 sm:px-6 relative max-w-full">
                 {/* Heading */}
-                <div className="text-center mb-20">
-                    <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-4">Our Products</h3>
-                    <h2 className="text-5xl md:text-6xl font-serif font-bold text-brand-dark leading-tight mb-6">
+                <div className="text-center mb-14 sm:mb-20">
+                    <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-3 sm:mb-4 text-xs sm:text-sm">Our Products</h3>
+                    <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold text-brand-dark leading-tight mb-4 sm:mb-6">
                         Pure Parity <br />Mustard Oil
                     </h2>
-                    <p className="text-gray-500 max-w-lg mx-auto text-lg">
+                    <p className="text-gray-500 max-w-lg mx-auto text-base sm:text-lg">
                         Choose the pack size that fits your kitchen. Slide to view all options.
                     </p>
                 </div>
@@ -159,20 +159,20 @@ const ProductShowcase = () => {
                             <button
                                 onClick={handlePrev}
                                 disabled={currentIndex === 0}
-                                className="absolute -left-2 lg:-left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-brand-dark shadow-md hover:shadow-lg hover:border-brand-gold transition-all disabled:opacity-30 disabled:pointer-events-none"
+                                className="absolute left-0 sm:-left-2 lg:-left-6 top-1/2 -translate-y-1/2 z-30 w-10 sm:w-12 h-10 sm:h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-brand-dark shadow-md hover:shadow-lg hover:border-brand-gold transition-all disabled:opacity-30 disabled:pointer-events-none"
                                 aria-label="Previous Products"
                             >
-                                <ChevronLeft size={24} />
+                                <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
                             </button>
 
                             {/* Next Button */}
                             <button
                                 onClick={handleNext}
                                 disabled={currentIndex >= maxIndex}
-                                className="absolute -right-2 lg:-right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-brand-dark shadow-md hover:shadow-lg hover:border-brand-gold transition-all disabled:opacity-30 disabled:pointer-events-none"
+                                className="absolute right-0 sm:-right-2 lg:-right-6 top-1/2 -translate-y-1/2 z-30 w-10 sm:w-12 h-10 sm:h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-brand-dark shadow-md hover:shadow-lg hover:border-brand-gold transition-all disabled:opacity-30 disabled:pointer-events-none"
                                 aria-label="Next Products"
                             >
-                                <ChevronRight size={24} />
+                                <ChevronRight size={20} className="sm:w-6 sm:h-6" />
                             </button>
                         </>
                     )}

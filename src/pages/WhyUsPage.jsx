@@ -23,25 +23,25 @@ const WhyUsPage = () => {
                     </svg>
                 </div>
 
-                <div className="container mx-auto px-6 relative z-10 text-center">
+                <div className="container mx-auto px-4 sm:px-6 relative z-10 text-center max-w-full">
                     <motion.h1
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-6xl md:text-8xl font-serif font-bold mb-8 speakable-title"
+                        className="text-4xl sm:text-6xl md:text-8xl font-serif font-bold mb-6 sm:mb-8 speakable-title"
                     >
                         Why Us
                     </motion.h1>
-                    <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed speakable-summary">
+                    <p className="text-base sm:text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed speakable-summary px-2">
                         Purity and Fairness, Just the Way Home Should Feel.
                     </p>
                 </div>
             </section>
 
             {/* Our Story */}
-            <section className="py-24 bg-brand-light">
-                <div className="container mx-auto px-6">
+            <section className="py-20 sm:py-24 bg-brand-light overflow-hidden w-full max-w-full">
+                <div className="container mx-auto px-4 sm:px-6 max-w-full">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h2 className="text-4xl md:text-5xl font-serif font-bold text-brand-dark mb-12">PARITY — Our Story</h2>
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-brand-dark mb-8 sm:mb-12">PARITY — Our Story</h2>
                         <div className="space-y-6 text-lg text-gray-600 leading-relaxed text-left speakable-answer">
                             <p>
                                 Parity was created with one belief — Indian families deserve pure, honest everyday essentials without overpaying or compromising on health.

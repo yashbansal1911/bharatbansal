@@ -47,20 +47,20 @@ const VisionMission = () => {
     return (
         <section
             ref={sectionRef}
-            className="relative py-32 overflow-hidden"
+            className="relative py-20 sm:py-32 overflow-hidden w-full max-w-full"
             style={{ background: 'linear-gradient(160deg, #FDFBF7 0%, #f5f0e8 50%, #FDFBF7 100%)' }}
         >
             {/* Parallax decorative blobs */}
             <motion.div
                 style={{ y: bgY }}
-                className="absolute inset-0 pointer-events-none"
+                className="absolute inset-0 pointer-events-none overflow-hidden"
             >
                 <div
-                    className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full"
+                    className="absolute -top-32 -left-32 w-[320px] sm:w-[600px] h-[320px] sm:h-[600px] rounded-full"
                     style={{ background: 'radial-gradient(circle, rgba(209,158,49,0.08) 0%, transparent 65%)' }}
                 />
                 <div
-                    className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full"
+                    className="absolute -bottom-32 -right-32 w-[280px] sm:w-[500px] h-[280px] sm:h-[500px] rounded-full"
                     style={{ background: 'radial-gradient(circle, rgba(75,89,48,0.10) 0%, transparent 65%)' }}
                 />
             </motion.div>
@@ -74,7 +74,7 @@ const VisionMission = () => {
                 }}
             />
 
-            <div className="relative z-10 container mx-auto px-6">
+            <div className="relative z-10 container mx-auto px-4 sm:px-6 max-w-full">
 
                 {/* Section Header */}
                 <motion.div
@@ -82,17 +82,17 @@ const VisionMission = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className="text-center mb-20"
+                    className="text-center mb-14 sm:mb-20"
                 >
-                    <div className="inline-flex items-center gap-2 bg-brand-dark/5 border border-brand-gold/30 px-4 py-2 rounded-full mb-6">
+                    <div className="inline-flex items-center gap-2 bg-brand-dark/5 border border-brand-gold/30 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full mb-5 sm:mb-6">
                         <Sparkles size={14} className="text-brand-gold" />
-                        <span className="text-xs font-bold tracking-[0.2em] uppercase text-brand-dark">Our Purpose</span>
+                        <span className="text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase text-brand-dark">Our Purpose</span>
                     </div>
-                    <h2 className="text-5xl md:text-6xl font-serif font-bold text-brand-dark leading-tight">
+                    <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold text-brand-dark leading-tight">
                         What Drives Us <br />
                         <span className="text-brand-gold italic">Every Single Day</span>
                     </h2>
-                    <div className="w-16 h-1 bg-brand-gold mx-auto mt-6 rounded-full" />
+                    <div className="w-16 h-1 bg-brand-gold mx-auto mt-5 sm:mt-6 rounded-full" />
                 </motion.div>
 
                 {/* Vision & Mission Cards */}
@@ -152,7 +152,7 @@ const VisionMission = () => {
                     transition={{ duration: 0.8, delay: 0.3 }}
                     className="max-w-4xl mx-auto"
                 >
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-brand-dark/10 rounded-3xl overflow-hidden shadow-lg">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-brand-dark/10 rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg">
                         {stats.map(({ value, label }, i) => (
                             <motion.div
                                 key={label}
@@ -160,12 +160,12 @@ const VisionMission = () => {
                                 whileInView={{ opacity: 1, scale: 1 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
-                                className="bg-white/80 backdrop-blur-sm px-6 py-8 text-center group hover:bg-brand-dark transition-colors duration-300"
+                                className="bg-white/80 backdrop-blur-sm px-3 sm:px-6 py-6 sm:py-8 text-center group hover:bg-brand-dark transition-colors duration-300"
                             >
-                                <div className="text-4xl md:text-5xl font-serif font-bold text-brand-green group-hover:text-brand-gold transition-colors duration-300 mb-1">
+                                <div className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-brand-green group-hover:text-brand-gold transition-colors duration-300 mb-1">
                                     {value}
                                 </div>
-                                <div className="text-xs font-bold tracking-widest uppercase text-gray-500 group-hover:text-white/70 transition-colors duration-300">
+                                <div className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-gray-500 group-hover:text-white/70 transition-colors duration-300">
                                     {label}
                                 </div>
                             </motion.div>

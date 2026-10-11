@@ -32,26 +32,26 @@ const HomePage = () => {
             <AEOAnswersSection />
 
             {/* Short About Teaser */}
-            <section className="py-24 bg-brand-light">
-                <div className="container mx-auto px-6 text-center">
+            <section className="py-20 sm:py-24 bg-brand-light overflow-hidden w-full max-w-full">
+                <div className="container mx-auto px-4 sm:px-6 text-center max-w-full">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8 }}
                     >
-                        <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-4">Our Legacy</h3>
-                        <h2 className="text-4xl md:text-5xl font-serif font-bold text-brand-dark mb-6">
+                        <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-3 sm:mb-4 text-xs sm:text-sm">Our Legacy</h3>
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-brand-dark mb-4 sm:mb-6">
                             25+ Years of Trust & Purity
                         </h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto mb-10 text-lg leading-relaxed">
+                        <p className="text-gray-600 max-w-2xl mx-auto mb-8 sm:mb-10 text-base sm:text-lg leading-relaxed px-2">
                             From a humble beginning in the 1980s to a leading FMCG brand today. Discover the story behind B Forever Foods.
                         </p>
                         <Link
                             to="/about"
-                            className="inline-flex items-center text-brand-dark font-bold border-b-2 border-brand-gold pb-1 hover:text-brand-gold transition-colors text-lg"
+                            className="inline-flex items-center text-brand-dark font-bold border-b-2 border-brand-gold pb-1 hover:text-brand-gold transition-colors text-base sm:text-lg"
                         >
-                            Read Our Story <ArrowRight className="ml-2" size={20} />
+                            Read Our Story <ArrowRight className="ml-2" size={18} />
                         </Link>
                     </motion.div>
                 </div>

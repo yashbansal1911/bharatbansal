@@ -6,12 +6,12 @@ import { recipes } from '../data/recipes';
 
 const Recipes = () => {
     return (
-        <section id="recipes" className="py-24 bg-white">
-            <div className="container mx-auto px-6">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16">
+        <section id="recipes" className="py-20 sm:py-24 bg-white overflow-hidden w-full max-w-full">
+            <div className="container mx-auto px-4 sm:px-6 max-w-full">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 sm:mb-16 gap-6">
                     <div>
-                        <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-4">Culinary Corner</h3>
-                        <h2 className="text-4xl md:text-5xl font-serif font-bold text-brand-dark">
+                        <h3 className="text-brand-gold font-bold tracking-widest uppercase mb-3 sm:mb-4 text-xs sm:text-sm">Culinary Corner</h3>
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-brand-dark">
                             Cook with Parity
                         </h2>
                     </div>

@@ -50,14 +50,14 @@ const Navbar = () => {
 
     return (
         <nav
-            className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'py-3' : 'py-5'
+            className={`fixed inset-x-0 top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'py-2 sm:py-3' : 'py-3 sm:py-5'
                 }`}
         >
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto px-3 sm:px-6 max-w-full">
                 <div
-                    className={`rounded-full px-8 py-3 flex justify-between items-center transition-all duration-500 ${isScrolled
-                        ? 'bg-white/90 backdrop-blur-xl shadow-lg border border-white/20'
-                        : 'bg-white/80 backdrop-blur-md shadow-sm'
+                    className={`rounded-full px-4 sm:px-8 py-2.5 sm:py-3 flex justify-between items-center transition-all duration-500 ${isScrolled
+                        ? 'bg-white/95 backdrop-blur-xl shadow-lg border border-white/20'
+                        : 'bg-white/90 backdrop-blur-md shadow-sm'
                         }`}
                 >
                     {/* Logo */}
@@ -66,8 +66,8 @@ const Navbar = () => {
                         className="flex items-center"
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     >
-                        <img src="/images/parity-icon-new.png" alt="Icon" className="h-12 w-auto mr-3 object-contain" />
-                        <img src="/images/parity-logo-new.png" alt="PARITY Logo" className="h-10 w-auto object-contain" />
+                        <img src="/images/parity-icon-new.png" alt="Icon" className="h-9 sm:h-12 w-auto mr-2 sm:mr-3 object-contain" />
+                        <img src="/images/parity-logo-new.png" alt="PARITY Logo" className="h-7 sm:h-10 w-auto object-contain" />
                     </Link>
 
                     {/* Desktop Menu */}
@@ -139,7 +139,7 @@ const Navbar = () => {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="absolute top-full left-0 w-full px-6 pt-2"
+                        className="absolute top-full left-0 w-full px-3 sm:px-6 pt-2"
                     >
                         <div className="bg-white rounded-[2rem] shadow-2xl p-8 flex flex-col space-y-6 border border-gray-100">
                             {navLinks.map((link) => (

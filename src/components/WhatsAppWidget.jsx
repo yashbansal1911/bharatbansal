@@ -43,7 +43,7 @@ const WhatsAppWidget = () => {
 
     return (
         <div
-            className="fixed bottom-6 right-6 z-50 flex items-end gap-3"
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-end gap-2.5 sm:gap-3"
             aria-label="WhatsApp Chat"
         >
             {/* Tooltip Badge */}

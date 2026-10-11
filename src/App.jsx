@@ -31,7 +31,7 @@ const MainLayout = () => {
   const isKachiGhani = location.pathname === '/parity-kachi-ghani-mustard-oil';
 
   return (
-    <div className="min-h-screen bg-brand-light flex flex-col">
+    <div className="min-h-screen bg-brand-light flex flex-col w-full max-w-full overflow-x-hidden">
       <Navbar />
       <CartDrawer />
       <main className="flex-grow">
