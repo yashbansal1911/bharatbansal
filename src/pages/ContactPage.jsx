@@ -1,22 +1,37 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { 
     Phone, Mail, MapPin, Loader2, CheckCircle, AlertCircle, 
     ChevronDown, Leaf, Shield, Award, Users, Building, 
-    Upload, ArrowRight, Check 
+    ArrowRight, Check, Handshake 
 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
-import { db, storage } from '../config/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import SEOHead from '../components/SEOHead';
 
 const ContactPage = () => {
     const generalFormRef = useRef();
     const distributorFormRef = useRef();
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    const [selectedInquiry, setSelectedInquiry] = useState('general'); // 'general' or 'partner'
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const initialTab = searchParams.get('tab') === 'partner' ? 'partner' : 'general';
+    const [selectedInquiry, setSelectedInquiry] = useState(initialTab); // 'general' or 'partner'
+    const [declarationError, setDeclarationError] = useState(false);
+
+    // Sync state if URL search params change externally
+    useEffect(() => {
+        const tabParam = searchParams.get('tab');
+        if (tabParam === 'partner') {
+            setSelectedInquiry('partner');
+        } else if (tabParam === 'general' || tabParam === 'contact') {
+            setSelectedInquiry('general');
+        }
+    }, [searchParams]);
+
+    const handleTabSwitch = (tab) => {
+        setSelectedInquiry(tab);
+        setSearchParams(tab === 'partner' ? { tab: 'partner' } : {}, { replace: true });
+    };
 
     // General Form State
     const [generalStatus, setGeneralStatus] = useState('idle'); // idle, sending, success, error
@@ -45,14 +60,6 @@ const ContactPage = () => {
         warehouseAvailable: 'Yes',
         warehouseSize: 'Below 500',
         salespersons: 'None',
-        retailOutlets: 'Below 50',
-        brandsDistributed: '',
-        areaCovered: '',
-        startOperations: 'Immediately',
-        gstCertificate: null,
-        businessRegCertificate: null,
-        warehousePhotos: null,
-        visitingCard: null,
         declared: false
     });
 
@@ -103,162 +110,142 @@ const ContactPage = () => {
     // Distributor Form Handlers
     const handleDistributorChange = (e) => {
         const { name, value, type, checked } = e.target;
+        if (name === 'declared' && checked) {
+            setDeclarationError(false);
+        }
         setDistributorData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
     };
 
-    const handleFileChange = (e) => {
-        const { name, files } = e.target;
-        if (files && files[0]) {
-            setDistributorData(prev => ({
-                ...prev,
-                [name]: files[0]
-            }));
-        }
-    };
-
     const handleDistributorSubmit = async (e) => {
         e.preventDefault();
         if (!distributorData.declared) {
-            alert('Please check the declaration box to verify your inquiry.');
+            setDeclarationError(true);
+            const declarationEl = document.getElementById('declaration-checkbox');
+            if (declarationEl) {
+                declarationEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return;
         }
 
+        setDeclarationError(false);
         setDistributorStatus('sending');
 
         try {
-            // ── STEP 1: Upload files to Firebase Storage ──────────────────────
-            const fileFields = [
-                'gstCertificate',
-                'businessRegCertificate',
-                'warehousePhotos',
-                'visitingCard',
-            ];
-
-            const fileURLs = {};
-            for (const field of fileFields) {
-                const file = distributorData[field];
-                if (file) {
-                    const timestamp = Date.now();
-                    const storageRef = ref(
-                        storage,
-                        `distributor_leads/${timestamp}_${field}_${file.name}`
-                    );
-                    const snapshot = await uploadBytes(storageRef, file);
-                    fileURLs[field] = await getDownloadURL(snapshot.ref);
-                } else {
-                    fileURLs[field] = null;
-                }
-            }
-
-            // ── STEP 2: Save lead to Firestore ────────────────────────────────
-            const leadData = {
-                submittedAt: serverTimestamp(),
-                status: 'new',
-                // Personal
+            const payload = {
                 fullName: distributorData.fullName,
                 mobile: distributorData.mobile,
-                whatsApp: distributorData.whatsApp,
+                whatsApp: distributorData.whatsApp || distributorData.mobile,
                 email: distributorData.email,
-                // Business
                 firmName: distributorData.firmName,
                 businessType: distributorData.businessType,
                 gstNumber: distributorData.gstNumber,
                 experience: distributorData.experience,
-                // Location
                 state: distributorData.state,
                 district: distributorData.district,
                 city: distributorData.city,
                 pinCode: distributorData.pinCode,
-                // Infrastructure
                 warehouseAvailable: distributorData.warehouseAvailable,
                 warehouseSize: distributorData.warehouseSize,
                 salespersons: distributorData.salespersons,
-                // Market reach
-                retailOutlets: distributorData.retailOutlets,
-                brandsDistributed: distributorData.brandsDistributed || '',
-                areaCovered: distributorData.areaCovered || '',
-                startOperations: distributorData.startOperations,
-                // Uploaded file URLs
-                files: fileURLs,
             };
 
-            const docRef = await addDoc(collection(db, 'distributor_leads'), leadData);
+            // ── Send via Backend API (triggers Resend email to info@bforeverfoods.com) ──
+            const rawApiUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
+            const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+            const targetUrl = isLocalhost && rawApiUrl ? `${rawApiUrl}/api/partner-inquiry` : '/api/partner-inquiry';
 
-            // ── STEP 3: Send EmailJS notification (fire-and-forget) ───────────
-            // Even if this fails, the lead is already safe in Firestore.
-            const buildFileLink = (url, label) =>
-                url ? `${label}: ${url}` : `${label}: Not Uploaded`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-            const templateParams = {
-                from_name: distributorData.fullName,
-                reply_to: distributorData.email,
-                to_name: 'Parity Distributor Team',
-                message: `
-=== NEW DISTRIBUTOR LEAD — Firestore ID: ${docRef.id} ===
+            try {
+                const res = await fetch(targetUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal,
+                });
+                clearTimeout(timeoutId);
+                if (!res.ok && targetUrl !== '/api/partner-inquiry') {
+                    // Fallback to relative URL if localhost direct call failed
+                    await fetch('/api/partner-inquiry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    }).catch(() => {});
+                }
+            } catch (apiErr) {
+                clearTimeout(timeoutId);
+                console.warn('Backend partner API fetch error, checking relative endpoint:', apiErr);
+                if (targetUrl !== '/api/partner-inquiry') {
+                    await fetch('/api/partner-inquiry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    }).catch(() => {});
+                }
+            }
 
-PERSONAL DETAILS:
-- Full Name   : ${distributorData.fullName}
-- Mobile      : ${distributorData.mobile}
-- WhatsApp    : ${distributorData.whatsApp}
-- Email       : ${distributorData.email}
+            // Optional non-blocking EmailJS notification in background
+            try {
+                const templateParams = {
+                    from_name: distributorData.fullName,
+                    reply_to: distributorData.email,
+                    to_name: 'Parity Distributor Team',
+                    message: `
+NEW DISTRIBUTOR INQUIRY:
+Full Name: ${distributorData.fullName}
+Mobile: ${distributorData.mobile}
+WhatsApp: ${distributorData.whatsApp || distributorData.mobile}
+Email: ${distributorData.email}
+Company: ${distributorData.firmName} (${distributorData.businessType})
+GST: ${distributorData.gstNumber || 'N/A'}
+Experience: ${distributorData.experience}
+Location: ${distributorData.city}, ${distributorData.district}, ${distributorData.state} - ${distributorData.pinCode}
+Warehouse: ${distributorData.warehouseAvailable} (${distributorData.warehouseSize} sq ft)
+Salespersons: ${distributorData.salespersons}
+                    `.trim(),
+                };
 
-BUSINESS PROFILE:
-- Company Name: ${distributorData.firmName}
-- Business Type: ${distributorData.businessType}
-- GST Number  : ${distributorData.gstNumber}
-- Experience  : ${distributorData.experience}
+                emailjs
+                    .send(
+                        import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_196fkgq',
+                        import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s',
+                        templateParams,
+                        { publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy' }
+                    )
+                    .catch(() => {});
+            } catch (ejsErr) {
+                // Ignore error
+            }
 
-TERRITORY:
-- Location    : ${distributorData.city}, ${distributorData.district}, ${distributorData.state} — ${distributorData.pinCode}
-
-INFRASTRUCTURE:
-- Warehouse   : ${distributorData.warehouseAvailable} (${distributorData.warehouseSize} sq ft)
-- Salespersons: ${distributorData.salespersons}
-
-MARKET REACH & OPERATIONS:
-- Retail Outlets : ${distributorData.retailOutlets}
-- Brands         : ${distributorData.brandsDistributed || 'None'}
-- Area Covered   : ${distributorData.areaCovered || 'None'}
-- Start Timeline : ${distributorData.startOperations}
-
-DOCUMENTS (click to open):
-${buildFileLink(fileURLs.gstCertificate, 'GST Certificate')}
-${buildFileLink(fileURLs.businessRegCertificate, 'Business Registration')}
-${buildFileLink(fileURLs.warehousePhotos, 'Warehouse Photos')}
-${buildFileLink(fileURLs.visitingCard, 'Visiting Card')}
-                `.trim(),
-            };
-
-            // Non-blocking — don't await, don't fail user if email fails
-            emailjs
-                .send(
-                    import.meta.env.VITE_EMAILJS_CONTACT_SERVICE_ID || 'service_196fkgq',
-                    import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_93bek1s',
-                    templateParams,
-                    { publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '_Uos1mzZcJ6lnkUdy' }
-                )
-                .catch((err) =>
-                    console.warn('EmailJS notification failed (lead saved in Firestore):', err)
-                );
-
-            // ── STEP 4: Show success & reset form ────────────────────────────
+            // ── Show success immediately & reset form ──
             setDistributorStatus('success');
             setDistributorData({
-                fullName: '', mobile: '', whatsApp: '', email: '', firmName: '',
-                businessType: 'Distributor', gstNumber: '', experience: 'Less than 1 year',
-                state: '', district: '', city: '', pinCode: '', warehouseAvailable: 'Yes',
-                warehouseSize: 'Below 500', salespersons: 'None', retailOutlets: 'Below 50',
-                brandsDistributed: '', areaCovered: '', startOperations: 'Immediately',
-                gstCertificate: null, businessRegCertificate: null,
-                warehousePhotos: null, visitingCard: null,
+                fullName: '',
+                mobile: '',
+                whatsApp: '',
+                email: '',
+                firmName: '',
+                businessType: 'Distributor',
+                gstNumber: '',
+                experience: 'Less than 1 year',
+                state: '',
+                district: '',
+                city: '',
+                pinCode: '',
+                warehouseAvailable: 'Yes',
+                warehouseSize: 'Below 500',
+                salespersons: 'None',
                 declared: false,
             });
 
+            scrollToForm();
+
         } catch (error) {
-            console.error('Failed to save distributor lead:', error);
+            console.error('Failed to submit distributor lead:', error);
             setDistributorStatus('error');
         }
     };
@@ -307,41 +294,61 @@ ${buildFileLink(fileURLs.visitingCard, 'Visiting Card')}
                         </h1>
                     </div>
 
-                    {/* Inquiry Type Dropdown */}
-                    <div className="relative inline-block text-left w-full md:w-80 z-40">
+                    {/* Inquiry Type Buttons (Side-by-Side Pill Switcher) */}
+                    <div 
+                        role="tablist" 
+                        aria-label="Inquiry Type" 
+                        className="inline-flex items-center p-1.5 bg-white border border-[#D19E31]/70 rounded-full shadow-sm w-full md:w-auto relative"
+                    >
+                        {/* Contact Us Button */}
                         <button 
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex items-center justify-between w-full px-6 py-4 bg-white border border-gray-200 rounded-full shadow-sm hover:border-brand-gold hover:shadow-md transition-all text-brand-dark font-bold text-sm tracking-wider uppercase"
+                            type="button"
+                            role="tab"
+                            id="tab-general"
+                            aria-controls="panel-general"
+                            aria-selected={selectedInquiry === 'general'}
+                            onClick={() => handleTabSwitch('general')}
+                            className={`relative flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase transition-colors duration-200 z-10 select-none cursor-pointer ${
+                                selectedInquiry === 'general' 
+                                    ? 'text-white' 
+                                    : 'text-brand-dark/70 hover:text-brand-dark'
+                            }`}
                         >
-                            <span>{selectedInquiry === 'general' ? 'Contact Us' : 'Partner With Us'}</span>
-                            <ChevronDown size={16} className={`text-brand-gold transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            {selectedInquiry === 'general' && (
+                                <motion.div
+                                    layoutId="activeInquiryTab"
+                                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                                    className="absolute inset-0 bg-brand-dark rounded-full shadow-md -z-10"
+                                />
+                            )}
+                            <Mail size={16} className={`transition-colors ${selectedInquiry === 'general' ? 'text-brand-gold' : 'text-gray-400'}`} />
+                            <span>Contact Us</span>
                         </button>
 
-                        <AnimatePresence>
-                            {isDropdownOpen && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="absolute right-0 mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-100 py-2"
-                                >
-                                    <button 
-                                        onClick={() => { setSelectedInquiry('general'); setIsDropdownOpen(false); }}
-                                        className={`w-full text-left px-6 py-3.5 text-xs font-bold transition-colors uppercase tracking-wider block
-                                            ${selectedInquiry === 'general' ? 'text-brand-gold bg-brand-light' : 'text-gray-600 hover:bg-gray-50'}`}
-                                    >
-                                        Contact Us
-                                    </button>
-                                    <button 
-                                        onClick={() => { setSelectedInquiry('partner'); setIsDropdownOpen(false); }}
-                                        className={`w-full text-left px-6 py-3.5 text-xs font-bold transition-colors uppercase tracking-wider block
-                                            ${selectedInquiry === 'partner' ? 'text-brand-gold bg-brand-light' : 'text-gray-600 hover:bg-gray-50'}`}
-                                    >
-                                        Partner With Us
-                                    </button>
-                                </motion.div>
+                        {/* Partner With Us Button */}
+                        <button 
+                            type="button"
+                            role="tab"
+                            id="tab-partner"
+                            aria-controls="panel-partner"
+                            aria-selected={selectedInquiry === 'partner'}
+                            onClick={() => handleTabSwitch('partner')}
+                            className={`relative flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase transition-colors duration-200 z-10 select-none cursor-pointer ${
+                                selectedInquiry === 'partner' 
+                                    ? 'text-white' 
+                                    : 'text-brand-dark/70 hover:text-brand-dark'
+                            }`}
+                        >
+                            {selectedInquiry === 'partner' && (
+                                <motion.div
+                                    layoutId="activeInquiryTab"
+                                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                                    className="absolute inset-0 bg-brand-dark rounded-full shadow-md -z-10"
+                                />
                             )}
-                        </AnimatePresence>
+                            <Handshake size={17} className={`transition-colors ${selectedInquiry === 'partner' ? 'text-brand-gold' : 'text-gray-400'}`} />
+                            <span>Partner With Us</span>
+                        </button>
                     </div>
                 </div>
 
@@ -352,6 +359,9 @@ ${buildFileLink(fileURLs.visitingCard, 'Visiting Card')}
                     {selectedInquiry === 'general' && (
                         <motion.div
                             key="general"
+                            id="panel-general"
+                            role="tabpanel"
+                            aria-labelledby="tab-general"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
@@ -519,6 +529,9 @@ ${buildFileLink(fileURLs.visitingCard, 'Visiting Card')}
                     {selectedInquiry === 'partner' && (
                         <motion.div
                             key="partner"
+                            id="panel-partner"
+                            role="tabpanel"
+                            aria-labelledby="tab-partner"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
@@ -637,8 +650,8 @@ ${buildFileLink(fileURLs.visitingCard, 'Visiting Card')}
                                                     <input type="tel" name="mobile" value={distributorData.mobile} onChange={handleDistributorChange} required className={inputClasses} placeholder="Enter active mobile number" />
                                                 </div>
                                                 <div>
-                                                    <label className={labelClasses}>WhatsApp Number *</label>
-                                                    <input type="tel" name="whatsApp" value={distributorData.whatsApp} onChange={handleDistributorChange} required className={inputClasses} placeholder="Enter WhatsApp number" />
+                                                    <label className={labelClasses}>WhatsApp Number</label>
+                                                    <input type="tel" name="whatsApp" value={distributorData.whatsApp} onChange={handleDistributorChange} className={inputClasses} placeholder="Enter WhatsApp number (optional)" />
                                                 </div>
                                             </div>
                                         </div>
@@ -663,8 +676,8 @@ ${buildFileLink(fileURLs.visitingCard, 'Visiting Card')}
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label className={labelClasses}>GST Number *</label>
-                                                    <input type="text" name="gstNumber" value={distributorData.gstNumber} onChange={handleDistributorChange} required className={inputClasses} placeholder="Enter 15-digit GSTIN" />
+                                                    <label className={labelClasses}>GST Number (Optional)</label>
+                                                    <input type="text" name="gstNumber" value={distributorData.gstNumber} onChange={handleDistributorChange} className={inputClasses} placeholder="Enter 15-digit GSTIN (if available)" />
                                                 </div>
                                                 <div>
                                                     <label className={labelClasses}>Years of Business Experience *</label>
@@ -739,95 +752,19 @@ ${buildFileLink(fileURLs.visitingCard, 'Visiting Card')}
                                             </div>
                                         </div>
 
-                                        {/* SECTION 5: Market Reach & Operations */}
-                                        <div className="space-y-6">
-                                            <h4 className="text-base font-bold text-brand-dark border-l-4 border-brand-gold pl-3">5. Market Reach & Operations</h4>
-                                            <div className="grid grid-cols-1 gap-6">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <div>
-                                                        <label className={labelClasses}>Number of Retail Outlets Served *</label>
-                                                        <select name="retailOutlets" value={distributorData.retailOutlets} onChange={handleDistributorChange} required className={inputClasses}>
-                                                            <option value="Below 50">Below 50</option>
-                                                            <option value="50–100">50–100</option>
-                                                            <option value="100–300">100–300</option>
-                                                            <option value="300–500">300–500</option>
-                                                            <option value="500+">500+</option>
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label className={labelClasses}>When can you start operations? *</label>
-                                                        <select name="startOperations" value={distributorData.startOperations} onChange={handleDistributorChange} required className={inputClasses}>
-                                                            <option value="Immediately">Immediately</option>
-                                                            <option value="Within 1 Month">Within 1 Month</option>
-                                                            <option value="Within 3 Months">Within 3 Months</option>
-                                                            <option value="Within 6 Months">Within 6 Months</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <div>
-                                                        <label className={labelClasses}>Brands Currently Distributed</label>
-                                                        <textarea name="brandsDistributed" value={distributorData.brandsDistributed} onChange={handleDistributorChange} rows="3" className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none bg-white text-sm" placeholder="List existing brands if any" />
-                                                    </div>
-                                                    <div>
-                                                        <label className={labelClasses}>Distribution Area Covered</label>
-                                                        <textarea name="areaCovered" value={distributorData.areaCovered} onChange={handleDistributorChange} rows="3" className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20 outline-none bg-white text-sm" placeholder="Specify towns or sectors covered" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* SECTION 6: Document Verification */}
-                                        <div className="space-y-6">
-                                            <h4 className="text-base font-bold text-brand-dark border-l-4 border-brand-gold pl-3">6. Document Verification</h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {/* File 1 */}
-                                                <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                                                    <Upload size={20} className="text-gray-400 mb-2" />
-                                                    <label className="text-xs font-bold text-gray-700 block mb-1">Upload GST Certificate *</label>
-                                                    <input type="file" name="gstCertificate" required onChange={handleFileChange} className="hidden" id="file-gst" />
-                                                    <label htmlFor="file-gst" className="bg-white border border-gray-200 text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 mt-1 block">
-                                                        {distributorData.gstCertificate ? distributorData.gstCertificate.name : 'Select File'}
-                                                    </label>
-                                                </div>
-                                                {/* File 2 */}
-                                                <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                                                    <Upload size={20} className="text-gray-400 mb-2" />
-                                                    <label className="text-xs font-bold text-gray-700 block mb-1">Upload Business Registration Certificate</label>
-                                                    <input type="file" name="businessRegCertificate" onChange={handleFileChange} className="hidden" id="file-business" />
-                                                    <label htmlFor="file-business" className="bg-white border border-gray-200 text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 mt-1 block">
-                                                        {distributorData.businessRegCertificate ? distributorData.businessRegCertificate.name : 'Select File'}
-                                                    </label>
-                                                </div>
-                                                {/* File 3 */}
-                                                <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                                                    <Upload size={20} className="text-gray-400 mb-2" />
-                                                    <label className="text-xs font-bold text-gray-700 block mb-1">Upload Warehouse Photos</label>
-                                                    <input type="file" name="warehousePhotos" onChange={handleFileChange} className="hidden" id="file-photos" />
-                                                    <label htmlFor="file-photos" className="bg-white border border-gray-200 text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 mt-1 block">
-                                                        {distributorData.warehousePhotos ? distributorData.warehousePhotos.name : 'Select File'}
-                                                    </label>
-                                                </div>
-                                                {/* File 4 */}
-                                                <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                                                    <Upload size={20} className="text-gray-400 mb-2" />
-                                                    <label className="text-xs font-bold text-gray-700 block mb-1">Upload Visiting Card</label>
-                                                    <input type="file" name="visitingCard" onChange={handleFileChange} className="hidden" id="file-card" />
-                                                    <label htmlFor="file-card" className="bg-white border border-gray-200 text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 mt-1 block">
-                                                        {distributorData.visitingCard ? distributorData.visitingCard.name : 'Select File'}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-
                                         {/* Declaration Checkbox */}
-                                        <div className="border-t border-gray-100 pt-8">
+                                        <div id="declaration-checkbox" className={`border-t border-gray-100 pt-8 transition-all ${declarationError ? 'p-4 bg-red-50/60 rounded-2xl border border-red-200' : ''}`}>
                                             <label className="flex items-start gap-3 cursor-pointer select-none">
-                                                <input type="checkbox" name="declared" checked={distributorData.declared} onChange={handleDistributorChange} required className="w-5 h-5 rounded border-gray-200 accent-brand-gold text-white mt-0.5 flex-shrink-0" />
-                                                <span className="text-xs text-gray-500 leading-relaxed font-semibold">
+                                                <input type="checkbox" name="declared" checked={distributorData.declared} onChange={handleDistributorChange} className="w-5 h-5 rounded border-gray-200 accent-brand-gold text-white mt-0.5 flex-shrink-0" />
+                                                <span className={`text-xs leading-relaxed font-semibold ${declarationError ? 'text-red-700 font-bold' : 'text-gray-500'}`}>
                                                     I confirm that the information provided is accurate and I am genuinely interested in becoming an authorized Parity Mustard Oil distributor.
                                                 </span>
                                             </label>
+                                            {declarationError && (
+                                                <p className="text-red-600 text-xs font-semibold mt-2 pl-8">
+                                                    Please check the confirmation box above to submit your inquiry.
+                                                </p>
+                                            )}
                                         </div>
 
                                         {distributorStatus === 'error' && (

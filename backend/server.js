@@ -506,6 +506,141 @@ app.post('/api/orders/cod', async (req, res, next) => {
   }
 });
 
+// ─── Partner / Distributorship Inquiry ──────────────────────────────────────
+app.post('/api/partner-inquiry', async (req, res, next) => {
+  try {
+    const {
+      fullName,
+      mobile,
+      whatsApp,
+      email,
+      firmName,
+      businessType,
+      gstNumber,
+      experience,
+      state,
+      district,
+      city,
+      pinCode,
+      warehouseAvailable,
+      warehouseSize,
+      salespersons,
+    } = req.body;
+
+    if (!fullName || !email || !mobile || !firmName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Full Name, Mobile, Email, and Firm Name are required.',
+      });
+    }
+
+    ensureEmailConfig();
+
+    const submissionTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #222; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #ffffff;">
+        <div style="background-color: #2F3E1B; padding: 24px 32px; color: #ffffff;">
+          <h2 style="margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">New Partner / Distributorship Inquiry</h2>
+          <p style="margin: 6px 0 0 0; color: #D4A373; font-size: 14px;">Parity Mustard Oil (B Forever Foods Pvt Ltd)</p>
+        </div>
+        
+        <div style="padding: 28px 32px;">
+          <p style="margin-top: 0; font-size: 15px; color: #4b5563;">You have received a new dealership / partnership application submitted through the website:</p>
+          
+          <h3 style="color: #2F3E1B; font-size: 16px; border-bottom: 2px solid #D4A373; padding-bottom: 6px; margin-top: 24px;">1. Personal Details</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr><td style="padding: 8px 0; color: #6b7280; width: 40%;">Full Name:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${fullName}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Mobile Number:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;"><a href="tel:${mobile}" style="color: #2F3E1B;">${mobile}</a></td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">WhatsApp Number:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;"><a href="https://wa.me/${(whatsApp || mobile).replace(/[^0-9]/g, '')}" style="color: #2F3E1B;">${whatsApp || mobile}</a></td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Email Address:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;"><a href="mailto:${email}" style="color: #2F3E1B;">${email}</a></td></tr>
+          </table>
+
+          <h3 style="color: #2F3E1B; font-size: 16px; border-bottom: 2px solid #D4A373; padding-bottom: 6px; margin-top: 24px;">2. Business Profile</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr><td style="padding: 8px 0; color: #6b7280; width: 40%;">Firm / Company Name:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${firmName}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Business Type:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${businessType || 'Distributor'}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">GST Number:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${gstNumber || 'Not provided'}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">FMCG Experience:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${experience || 'N/A'}</td></tr>
+          </table>
+
+          <h3 style="color: #2F3E1B; font-size: 16px; border-bottom: 2px solid #D4A373; padding-bottom: 6px; margin-top: 24px;">3. Territory & Location</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr><td style="padding: 8px 0; color: #6b7280; width: 40%;">City / Town:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${city || 'N/A'}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">District:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${district || 'N/A'}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">State:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${state || 'N/A'}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">PIN Code:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${pinCode || 'N/A'}</td></tr>
+          </table>
+
+          <h3 style="color: #2F3E1B; font-size: 16px; border-bottom: 2px solid #D4A373; padding-bottom: 6px; margin-top: 24px;">4. Infrastructure</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr><td style="padding: 8px 0; color: #6b7280; width: 40%;">Warehouse Available:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${warehouseAvailable || 'N/A'}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Warehouse Size:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${warehouseSize ? warehouseSize + ' sq ft' : 'N/A'}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Number of Salespersons:</td><td style="padding: 8px 0; font-weight: bold; color: #111827;">${salespersons || 'N/A'}</td></tr>
+          </table>
+
+          <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #f3f4f6; font-size: 12px; color: #9ca3af; text-align: center;">
+            Submitted on ${submissionTime} IST via Parity Foods Partner Portal
+          </div>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+NEW PARTNER / DISTRIBUTORSHIP INQUIRY
+
+1. PERSONAL DETAILS:
+- Full Name: ${fullName}
+- Mobile: ${mobile}
+- WhatsApp: ${whatsApp || mobile}
+- Email: ${email}
+
+2. BUSINESS PROFILE:
+- Firm/Company Name: ${firmName}
+- Business Type: ${businessType || 'Distributor'}
+- GST Number: ${gstNumber || 'Not provided'}
+- FMCG Experience: ${experience || 'N/A'}
+
+3. LOCATION:
+- Location: ${city}, ${district}, ${state} - ${pinCode}
+
+4. INFRASTRUCTURE:
+- Warehouse: ${warehouseAvailable} (${warehouseSize} sq ft)
+- Salespersons: ${salespersons}
+
+Submitted at: ${submissionTime} IST
+    `.trim();
+
+    const { data, error } = await resend.emails.send({
+      from: `${EMAIL_FROM_NAME} <${EMAIL_SENDER_ADDRESS}>`,
+      to: ['info@bforeverfoods.com'],
+      reply_to: email,
+      subject: `New Partner Application: ${fullName} (${firmName})`,
+      text: textContent,
+      html: htmlContent,
+    });
+
+    if (error) {
+      console.warn('Resend email error on partner inquiry:', error);
+      throw new Error(error.message);
+    }
+
+    console.log(`[Partner Inquiry] Successfully sent email to info@bforeverfoods.com for ${fullName} (${firmName}), Resend ID: ${data?.id}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Your distributor application has been submitted successfully!',
+      id: data?.id,
+    });
+  } catch (err) {
+    console.error('Partner inquiry submission error:', err);
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to submit partner application.',
+    });
+  }
+});
+
 // ─── Test Email ────────────────────────────────────────────────────────────────
 app.get('/api/test-email', async (req, res) => {
   const { to } = req.query;

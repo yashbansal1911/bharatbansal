@@ -99,7 +99,7 @@ export default function SEOHead({
         },
         "sameAs": [
           "https://www.facebook.com/bforeverfoods",
-          "https://www.instagram.com/bforeverfoods"
+          "https://www.instagram.com/paritymustardoil/"
         ],
         "contactPoint": [
           {

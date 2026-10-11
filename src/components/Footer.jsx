@@ -15,8 +15,19 @@ const Footer = ({ className = "mt-20" }) => {
                             Elevating your culinary experience with purity and tradition. B Forever Foods Pvt Ltd - Since 1980s.
                         </p>
                         <div className="flex space-x-5">
-                            {[Facebook, Instagram, Twitter].map((Icon, i) => (
-                                <a key={i} href="#" className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-brand-gold hover:border-brand-gold hover:text-brand-dark transition-all">
+                            {[
+                                { Icon: Facebook, href: '#', label: 'Facebook' },
+                                { Icon: Instagram, href: 'https://www.instagram.com/paritymustardoil/', label: 'Instagram' },
+                                { Icon: Twitter, href: '#', label: 'Twitter' }
+                            ].map(({ Icon, href, label }, i) => (
+                                <a
+                                    key={i}
+                                    href={href}
+                                    target={href !== '#' ? "_blank" : undefined}
+                                    rel={href !== '#' ? "noopener noreferrer" : undefined}
+                                    aria-label={label}
+                                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-brand-gold hover:border-brand-gold hover:text-brand-dark transition-all"
+                                >
                                     <Icon size={18} />
                                 </a>
                             ))}
@@ -27,12 +38,13 @@ const Footer = ({ className = "mt-20" }) => {
                         <div>
                             <h4 className="text-brand-gold font-bold uppercase tracking-widest mb-6 sm:mb-8 text-xs sm:text-sm">Explore</h4>
                             <ul className="space-y-3.5 sm:space-y-4">
-                            {['Home', 'Our Story', 'Products', 'Kachi Ghani Oil', 'Contact'].map((item) => {
+                            {['Home', 'Our Story', 'Products', 'Kachi Ghani Oil', 'Partner With Us', 'Contact'].map((item) => {
                                     const links = {
                                         'Home': '/',
                                         'Our Story': '/about',
                                         'Products': '/shop',
                                         'Kachi Ghani Oil': '/parity-kachi-ghani-mustard-oil',
+                                        'Partner With Us': '/contact?tab=partner',
                                         'Contact': '/contact'
                                     };
                                     return (
