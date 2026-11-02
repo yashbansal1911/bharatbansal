@@ -39,7 +39,7 @@ const morenaLocalBusinessSchema = {
   "url": "https://bforeverfoods.com/parity-kachi-ghani-mustard-oil",
   "telephone": "+91-9111512398",
   "email": "info@bforeverfoods.com",
-  "priceRange": "₹350 - ₹2500",
+  "priceRange": "₹220 - ₹3300",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Industrial Area",
@@ -64,7 +64,7 @@ const morenaLocalBusinessSchema = {
   ]
 };
 
-const perLitre = { 1: '₹175 / L', 2: '₹170 / L', 4: '₹167 / L' };
+const perLitre = { 1: '₹190 / L', 3: '₹175 / L', 2: '₹170 / L', 4: '₹167 / L' };
 
 const marks = [
     { icon: Leaf,     label: 'Cold-Pressed' },
@@ -138,8 +138,8 @@ const KachniGanuPage = () => {
                     style={{ zIndex: 2 }}
                 >
                     <img
-                        src="/images/parity-mustard-oil-bottle.png"
-                        alt="Parity Mustard Oil – 5L"
+                        src="/images/parity-mustard-oil-5l-jar.png"
+                        alt="Parity Mustard Oil – 5L Jar"
                         className="max-h-[85%] max-w-[85%] object-contain select-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] translate-y-[8%]"
                     />
                 </motion.div>
@@ -188,7 +188,7 @@ const KachniGanuPage = () => {
                             ))}
                         </motion.div>
 
-                        {/* Mobile Bottle Image */}
+                        {/* Mobile Jar Image */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -196,8 +196,8 @@ const KachniGanuPage = () => {
                             className="flex lg:hidden justify-center items-center mt-6"
                         >
                             <img
-                                src="/images/parity-mustard-oil-bottle.png"
-                                alt="Parity Mustard Oil – 5L"
+                                src="/images/parity-mustard-oil-5l-jar.png"
+                                alt="Parity Mustard Oil – 5L Jar"
                                 className="max-h-[280px] w-auto object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)]"
                             />
                         </motion.div>

@@ -40,8 +40,8 @@ const ShopPage = () => {
                         "offers": {
                             "@type": "AggregateOffer",
                             "priceCurrency": "INR",
-                            "lowPrice": "350",
-                            "highPrice": "2500",
+                            "lowPrice": "220",
+                            "highPrice": "3300",
                             "offerCount": products.length.toString(),
                             "offers": products.map(p => ({
                                 "@type": "Offer",
@@ -100,7 +100,7 @@ const ShopPage = () => {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
                     {filteredProducts.map((product) => (
                         <motion.div
                             key={product.id}

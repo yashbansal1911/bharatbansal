@@ -570,7 +570,7 @@ Salespersons: ${distributorData.salespersons}
                                 
                                 {/* Absolute floating bottle illustration */}
                                 <div className="absolute right-6 lg:right-12 bottom-0 top-12 w-1/3 hidden md:flex items-center justify-center select-none pointer-events-none">
-                                    <img src="/images/parity-mustard-oil-bottle.png" alt="Parity Jar" className="h-full max-h-[420px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)]" />
+                                    <img src="/images/parity-mustard-oil-bottle.png" alt="Parity Mustard Oil Bottle" className="h-full max-h-[420px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)]" />
                                 </div>
                             </section>
 

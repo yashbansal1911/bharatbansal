@@ -74,16 +74,32 @@ export default function SEOHead({
     // 6. GEO & AEO JSON-LD Schema Construction
     const defaultGraph = [
       {
-        "@type": "Organization",
+        "@type": ["Organization", "Corporation"],
         "@id": "https://bforeverfoods.com/#organization",
         "name": "B Forever Foods Pvt Ltd",
         "legalName": "B Forever Foods Private Limited",
+        "alternateName": [
+          "B Forever Foods",
+          "Parity",
+          "Parity Foods",
+          "Parity Mustard Oil",
+          "Parity Kachi Ghani"
+        ],
         "url": "https://bforeverfoods.com",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://bforeverfoods.com/images/parity-icon-new.png"
+          "@id": "https://bforeverfoods.com/#logo",
+          "url": "https://bforeverfoods.com/images/parity-logo-new.png",
+          "contentUrl": "https://bforeverfoods.com/images/parity-logo-new.png",
+          "caption": "B Forever Foods Pvt Ltd - Parity Mustard Oil Logo"
         },
-        "description": "Leading producer of premium cold-pressed Kachi Ghani mustard oil, retaining traditional aroma, natural pungency, and vital nutrients.",
+        "image": "https://bforeverfoods.com/images/parity-mustard-oil-5l-jar.png",
+        "description": "B Forever Foods Pvt Ltd is a premier Indian manufacturer of traditional cold-pressed (Kachi Ghani) mustard oil, operating from Morena, Madhya Pradesh with pan-India distribution.",
+        "foundingDate": "1980",
+        "foundingLocation": {
+          "@type": "Place",
+          "name": "Morena, Madhya Pradesh, India"
+        },
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Industrial Area",
@@ -101,13 +117,20 @@ export default function SEOHead({
           "https://www.facebook.com/bforeverfoods",
           "https://www.instagram.com/paritymustardoil/"
         ],
+        "knowsAbout": [
+          "Mustard Oil",
+          "Kachi Ghani Mustard Oil",
+          "Cold Pressed Oil",
+          "Edible Oil Manufacturing",
+          "Morena Mustard Seed Heritage"
+        ],
         "contactPoint": [
           {
             "@type": "ContactPoint",
             "contactType": "customer service",
             "email": "info@bforeverfoods.com",
             "telephone": "+91-9111512398",
-            "areaServed": "All India",
+            "areaServed": "IN",
             "availableLanguage": ["English", "Hindi"]
           },
           {
@@ -115,7 +138,7 @@ export default function SEOHead({
             "contactType": "sales",
             "email": "info@bforeverfoods.com",
             "telephone": "+91-9111512398",
-            "areaServed": "All India",
+            "areaServed": "IN",
             "availableLanguage": ["English", "Hindi"]
           }
         ]
@@ -126,7 +149,7 @@ export default function SEOHead({
         "name": "B Forever Foods Pvt Ltd - Parity Mustard Oil Morena Plant",
         "url": "https://bforeverfoods.com/parity-kachi-ghani-mustard-oil",
         "telephone": "+91-9111512398",
-        "priceRange": "₹350 - ₹2500",
+        "priceRange": "₹220 - ₹3300",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Industrial Area",
@@ -156,10 +179,66 @@ export default function SEOHead({
         "@type": "WebSite",
         "@id": "https://bforeverfoods.com/#website",
         "url": "https://bforeverfoods.com",
-        "name": "B Forever Foods",
+        "name": "B Forever Foods Pvt Ltd",
+        "alternateName": "Parity Mustard Oil",
         "publisher": {
           "@id": "https://bforeverfoods.com/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://bforeverfoods.com/shop?search={search_term_string}",
+          "query-input": "required name=search_term_string"
         }
+      },
+      {
+        "@type": "ItemList",
+        "@id": "https://bforeverfoods.com/#sitelinks",
+        "name": "Primary Site Navigation",
+        "description": "Key links for Google Sitelinks",
+        "itemListElement": [
+          {
+            "@type": "SiteNavigationElement",
+            "position": 1,
+            "name": "Contact",
+            "description": "Corporate office, distributorship opportunities, and customer support for B Forever Foods.",
+            "url": "https://bforeverfoods.com/contact"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 2,
+            "name": "About Us",
+            "description": "Over 25+ years of trust, traditional stone milling heritage, and the story of Parity Mustard Oil.",
+            "url": "https://bforeverfoods.com/about"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 3,
+            "name": "Shop Products",
+            "description": "Buy 100% pure cold-pressed mustard oil in 1L Bottle, 1L Pouch, 5L Jar, and 15kg Tin packs.",
+            "url": "https://bforeverfoods.com/shop"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 4,
+            "name": "Kachi Ghani Mustard Oil",
+            "description": "Authentic stone-pressed cold-extraction mustard oil directly from Morena plant.",
+            "url": "https://bforeverfoods.com/parity-kachi-ghani-mustard-oil"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 5,
+            "name": "Why Us",
+            "description": "Zero chemical solvents, unrefined purity, high Omega-3, and laboratory certified quality.",
+            "url": "https://bforeverfoods.com/why-us"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "position": 6,
+            "name": "Traditional Recipes",
+            "description": "Regional Indian recipes crafted with Parity Cold-Pressed Mustard Oil.",
+            "url": "https://bforeverfoods.com/recipes"
+          }
+        ]
       },
       {
         "@type": "WebPage",
